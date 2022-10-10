@@ -1,14 +1,14 @@
 import React, { useContext } from 'react'
-import { IContext, SProps } from 'ssr-types-react'
+import { IContext, SProps } from 'ssr-types'
 import Player from '@/components/player'
 import Brief from '@/components/brief'
 import Recommend from '@/components/recommend'
 import Search from '@/components/search'
 import { Ddata, RecommendDataNode, PlayerDataNode, BriefDataNode } from '~/typings/data'
-import { STORE_CONTEXT } from '_build/create-context'
+import { useStoreContext } from 'ssr-common-utils'
 
-export default (props: SProps) => {
-  const { state, dispatch } = useContext<IContext<Ddata>>(STORE_CONTEXT)
+export default function Detail (props: SProps) {
+  const { state, dispatch } = useContext<IContext<Ddata>>(useStoreContext())
   return (
     <div>
       <Search></Search>

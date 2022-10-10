@@ -1,42 +1,46 @@
-import { resolve } from 'path'
-import { loadConfig, getCwd, StringToStream, mergeStream2 } from 'ssr-server-utils'
-import { renderToNodeStream, renderToString } from '@vue/server-renderer'
-import { ISSRContext, UserConfig, ExpressContext, IConfig } from 'ssr-types'
+import { Readable, Stream } from 'stream'
+import { loadConfig, StringToStream, mergeStream2, judgeServerFramework } from 'ssr-common-utils'
+import { ISSRContext, UserConfig, ISSRNestContext, IConfig } from 'ssr-types'
 import type { ViteDevServer } from 'vite'
+import type { Vue3RenderRes } from 'ssr-plugin-vue3'
 
-const cwd = getCwd()
 const defaultConfig = loadConfig()
+const serverFrameWork = judgeServerFramework()
 
+function render (ctx: ISSRContext, options?: UserConfig & {stream: true}): Promise<Readable>
+function render (ctx: ISSRContext, options?: UserConfig & {stream: false}): Promise<string>
 function render (ctx: ISSRContext, options?: UserConfig): Promise<string>
 function render<T> (ctx: ISSRContext, options?: UserConfig): Promise<T>
 
 async function render (ctx: ISSRContext, options?: UserConfig) {
-  const config = Object.assign({}, defaultConfig, options ?? {})
-  const { stream, isVite } = config
+  const extraConfig: UserConfig = options?.dynamicFile?.configFile ? require(options.dynamicFile.configFile).userConfig : {}
+  const config: IConfig = Object.assign({}, defaultConfig, options ?? {}, extraConfig)
+  const { isVite, isDev } = config
 
-  if (!ctx.response.type && typeof ctx.response.type !== 'function') {
+  if (!isDev && options?.dynamicFile?.assetManifest) {
+    config.isVite = !!(require(options.dynamicFile.assetManifest).vite)
+  }
+  if (serverFrameWork === 'ssr-plugin-midway') {
     ctx.response.type = 'text/html;charset=utf-8'
-  } else if (!(ctx as ExpressContext).response.hasHeader?.('content-type')) {
-    (ctx as ExpressContext).response.setHeader?.('Content-type', 'text/html;charset=utf-8')
+  } else if (serverFrameWork === 'ssr-plugin-nestjs') {
+    (ctx as ISSRNestContext).response.setHeader('Content-type', 'text/html;charset=utf-8')
   }
 
   const serverRes = isVite ? await viteRender(ctx, config) : await commonRender(ctx, config)
-  if (stream) {
-    const stream = mergeStream2(new StringToStream('<!DOCTYPE html>'), renderToNodeStream(serverRes))
+  if (serverRes instanceof Stream) {
+    const stream = mergeStream2(new StringToStream('<!DOCTYPE html>'), serverRes)
     stream.on('error', (e: any) => {
       console.log(e)
     })
     return stream
   } else {
-    const ctx: {
-      teleports?: Record<string, string>
-    } = {}
-    let html = await renderToString(serverRes, ctx)
-    if (ctx.teleports) {
+    let { html, teleportsContext } = serverRes
+    if (teleportsContext.teleports) {
+      const { teleports } = teleportsContext
       const cheerio = require('cheerio')
       const $ = cheerio.load(html)
-      for (const target in ctx.teleports) {
-        const content = ctx.teleports[target]
+      for (const target in teleports) {
+        const content = teleports[target]
         $(target).append(content)
       }
       html = $.html()
@@ -46,8 +50,9 @@ async function render (ctx: ISSRContext, options?: UserConfig) {
 }
 
 let viteServer: ViteDevServer|boolean = false
-async function viteRender (ctx: ISSRContext, config: IConfig) {
-  const { isDev, chunkName, vue3ServerEntry } = config
+
+async function viteRender (ctx: ISSRContext, config: IConfig): Promise<Vue3RenderRes> {
+  const { isDev, vue3ServerEntry, dynamicFile } = config
   let serverRes
   if (isDev) {
     const { createServer } = await import('vite')
@@ -56,23 +61,22 @@ async function viteRender (ctx: ISSRContext, config: IConfig) {
     const { serverRender } = await (viteServer as ViteDevServer).ssrLoadModule(vue3ServerEntry)
     serverRes = await serverRender(ctx, config)
   } else {
-    const serverFile = resolve(cwd, `./build/server/${chunkName}.server.js`)
-    const { serverRender } = require(serverFile)
+    const { serverRender } = require(dynamicFile.serverBundle)
     const serverRes = await serverRender(ctx, config)
     return serverRes
   }
   return serverRes
 }
 
-async function commonRender (ctx: ISSRContext, config: IConfig) {
-  const { isDev, chunkName } = config
-  const serverFile = resolve(cwd, `./build/server/${chunkName}.server.js`)
+async function commonRender (ctx: ISSRContext, config: IConfig): Promise<Vue3RenderRes> {
+  const { isDev, dynamicFile } = config
+  const serverBundle = dynamicFile.serverBundle
 
   if (isDev) {
-    delete require.cache[serverFile]
+    delete require.cache[serverBundle]
   }
 
-  const { serverRender } = require(serverFile)
+  const { serverRender } = require(dynamicFile.serverBundle)
   const serverRes = await serverRender(ctx, config)
   return serverRes
 }

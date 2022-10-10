@@ -8,7 +8,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "pm2": "^4.5.4",
     "ssr-core-vue3": "^6.0.0",
-    "ssr-server-utils": "^6.0.0",
+    "ssr-common-utils": "^6.0.0",
     "ssr-hoc-vue3": "^6.0.0",
     "swiper": "6.7.5",
     "vue": "^3.0.0",
@@ -33,9 +33,9 @@
     "start": "ssr start",
     "start:vite": "ssr start --vite",
     "build": "ssr build",
+    "build:o": "ssr build --optimize",
     "build:vite": "ssr build --vite",
     "deploy": "ssr build && ssr deploy",
-    "deploy:tencent": "ssr build && ssr deploy --tencent",
     "lint": "eslint . --ext .js,.tsx,.ts,.vue --cache",
     "lint:fix": "eslint . --ext .js,.tsx,.ts,.vue --cache --fix"
   }

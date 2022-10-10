@@ -6,6 +6,8 @@ import { Argv, IPlugin } from 'ssr-types'
 import { generateHtml } from './html'
 import { cleanOutDir } from './clean'
 import { handleEnv } from './preprocess'
+import { onWatcher, createWatcher } from './watcher'
+import { ssg } from './ssg'
 
 const spinnerProcess = fork(resolve(__dirname, './spinner')) // 单独创建子进程跑 spinner 否则会被后续的 同步代码 block 导致 loading 暂停
 
@@ -19,9 +21,12 @@ const spinner = {
 }
 
 const startOrBuild = async (argv: Argv, type: 'start' | 'build') => {
-  const { copyReactContext, judgeFramework, judgeServerFramework } = await import('ssr-server-utils')
+  const { copyReactContext, judgeFramework, judgeServerFramework, logGreen } = await import('ssr-common-utils')
   const framework = judgeFramework()
   const serverFramework = judgeServerFramework()
+  if (argv.ssg) {
+    logGreen('Using ssg for generate static html file')
+  }
   if (!argv.api) {
     const { clientPlugin } = await import(framework)
     const client: IPlugin['clientPlugin'] = clientPlugin()
@@ -37,6 +42,7 @@ const startOrBuild = async (argv: Argv, type: 'start' | 'build') => {
   }
   if (type === 'build') {
     await generateHtml(argv)
+    await ssg(argv)
   }
 }
 
@@ -48,12 +54,14 @@ const startFunc = async (argv: Argv) => {
   if (!argv.noclean) {
     await cleanOutDir()
   }
-  const { parseFeRoutes, transformConfig } = await import('ssr-server-utils')
+  const { parseFeRoutes, transformConfig } = await import('ssr-common-utils')
+  const watcher = await createWatcher()
   await transformConfig()
   await handleEnv(argv)
   await parseFeRoutes()
   spinner.stop()
   await startOrBuild(argv, 'start')
+  await onWatcher(watcher)
 }
 
 const buildFunc = async (argv: Argv) => {
@@ -62,7 +70,7 @@ const buildFunc = async (argv: Argv) => {
   if (!argv.noclean) {
     await cleanOutDir()
   }
-  const { parseFeRoutes, transformConfig } = await import('ssr-server-utils')
+  const { parseFeRoutes, transformConfig } = await import('ssr-common-utils')
   await transformConfig()
   await handleEnv(argv)
   await parseFeRoutes()
@@ -72,7 +80,7 @@ const buildFunc = async (argv: Argv) => {
 
 const deployFunc = async (argv: Argv) => {
   process.env.NODE_ENV = 'production'
-  const { judgeServerFramework } = await import('ssr-server-utils')
+  const { judgeServerFramework } = await import('ssr-common-utils')
   const serverFramework = judgeServerFramework()
   const { serverPlugin } = await import(serverFramework)
   const server: IPlugin['serverPlugin'] = serverPlugin()
@@ -100,6 +108,10 @@ yargs
     port: {
       desc: 'Setting application server port, default is 3000'
     },
+    optimize: {
+      alias: 'o',
+      desc: 'Optimize webpack bundle for high performance'
+    },
     ...cliDesc
   }), async (argv: Argv) => {
     await startFunc(argv)
@@ -108,6 +120,10 @@ yargs
     analyze: {
       alias: 'a',
       desc: 'Analyze bundle result when using webpack for build'
+    },
+    optimize: {
+      alias: 'o',
+      desc: 'Optimize webpack bundle for high performance'
     },
     vite: {
       desc: 'Build application by vite'
@@ -118,10 +134,14 @@ yargs
     html: {
       desc: 'Build application as a single html'
     },
+    ssg: {
+      desc: 'Build with Static Site Generation (Pre Render)'
+    },
     ...cliDesc
   }), async (argv: Argv) => {
+    const { logWarning } = await import('ssr-common-utils')
     if (argv.vite) {
-      console.log(`ssr build by vite is beta now, if you find some bugs, please submit an issue or you can use ssr build --vite --legacy which will close manualChunks
+      logWarning(`ssr build by vite is beta now, if you find some bugs, please submit an issue on https://github.com/zhangyuang/ssr/issues or you can use ssr build --vite --legacy which will close manualChunks
       to get a stable bundle result but maybe some performance loss
       `)
     }
@@ -133,6 +153,12 @@ yargs
     }
   }), async (argv: Argv) => {
     await deployFunc(argv)
+  })
+  .command('update', 'check dependencies version is latest', {}, async (argv: Argv) => {
+    spinner.start()
+    const { update } = await import ('./update')
+    await update()
+    spinner.stop()
   })
   .demandCommand(1, 'You need at least one command before moving on')
   .option('version', {

@@ -1,11 +1,14 @@
 import { build, UserConfig } from 'vite'
-import { loadConfig, chunkNamePlugin, rollupOutputOptions, manifestPlugin, commonConfig, asyncOptimizeChunkPlugin } from 'ssr-server-utils'
+import {
+  loadConfig, chunkNamePlugin, rollupOutputOptions, manifestPlugin,
+  commonConfig, asyncOptimizeChunkPlugin, getOutputPublicPath
+} from 'ssr-common-utils'
 import vuePlugin from '@vitejs/plugin-vue'
 import vueJSXPlugin from '@vitejs/plugin-vue-jsx'
 import babel from '@rollup/plugin-babel'
-import styleImport, { AndDesignVueResolve, VantResolve, ElementPlusResolve, NutuiResolve, AntdResolve } from 'vite-plugin-style-import'
+import { createStyleImportPlugin, AndDesignVueResolve, VantResolve, ElementPlusResolve, NutuiResolve, AntdResolve } from 'ssr-vite-plugin-style-import'
 
-const { getOutput, prefix, vue3ServerEntry, vue3ClientEntry, viteConfig, supportOptinalChaining, isDev, define, babelOptions } = loadConfig()
+const { getOutput, vue3ServerEntry, vue3ClientEntry, viteConfig, supportOptinalChaining, isDev, define, babelOptions, optimize } = loadConfig()
 const { clientOutPut, serverOutPut } = getOutput()
 
 const styleImportConfig = {
@@ -18,14 +21,16 @@ const styleImportConfig = {
     AntdResolve()
   ]
 }
+
 const serverConfig: UserConfig = {
   ...commonConfig(),
+  ...viteConfig?.().server?.otherConfig,
   plugins: [
     vuePlugin(viteConfig?.()?.server?.defaultPluginOptions),
     vueJSXPlugin(),
     viteConfig?.()?.common?.extraPlugin,
     viteConfig?.()?.server?.extraPlugin,
-    styleImport(styleImportConfig),
+    createStyleImportPlugin(styleImportConfig),
     !supportOptinalChaining && babel({
       babelHelpers: 'bundled',
       plugins: [
@@ -39,10 +44,18 @@ const serverConfig: UserConfig = {
       ...babelOptions
     })
   ],
+  optimizeDeps: {
+    esbuildOptions: {
+      // @ts-expect-error
+      bundle: isDev
+    }
+  },
   build: {
+    ...viteConfig?.().server?.otherConfig?.build,
     ssr: vue3ServerEntry,
     outDir: serverOutPut,
     rollupOptions: {
+      ...viteConfig?.().server?.otherConfig?.build?.rollupOptions,
       input: isDev ? vue3ClientEntry : vue3ServerEntry, // setting prebundle list by client-entry in dev
       output: {
         entryFileNames: 'Page.server.js'
@@ -50,38 +63,44 @@ const serverConfig: UserConfig = {
     }
   },
   define: {
+    ...viteConfig?.().server?.otherConfig?.define,
     __isBrowser__: false,
-    ...define?.server,
-    ...define?.base
+    ...define?.base,
+    ...define?.server
   }
 }
 
 const clientConfig: UserConfig = {
   ...commonConfig(),
-  base: isDev ? '/' : prefix,
+  ...viteConfig?.().client?.otherConfig,
+  base: isDev ? '/' : getOutputPublicPath(),
   plugins: [
     vuePlugin(viteConfig?.()?.client?.defaultPluginOptions),
     vueJSXPlugin(),
     viteConfig?.()?.common?.extraPlugin,
     viteConfig?.()?.client?.extraPlugin,
-    styleImport(styleImportConfig),
+    createStyleImportPlugin(styleImportConfig),
     babelOptions && babel({
       ...babelOptions
     })
   ],
   build: {
+    ...viteConfig?.().client?.otherConfig?.build,
+    ...(optimize ? { write: false } : {}),
     ssrManifest: true,
     outDir: clientOutPut,
     rollupOptions: {
+      ...viteConfig?.().client?.otherConfig?.build?.rollupOptions,
       input: vue3ClientEntry,
       output: rollupOutputOptions,
       plugins: [chunkNamePlugin(), asyncOptimizeChunkPlugin(), manifestPlugin()]
     }
   },
   define: {
+    ...viteConfig?.().client?.otherConfig?.define,
     __isBrowser__: true,
-    ...define?.client,
-    ...define?.base
+    ...define?.base,
+    ...define?.client
   }
 }
 const viteStart = async () => {
@@ -92,9 +111,18 @@ const viteBuild = async () => {
   await build({ ...serverConfig, mode: 'production' })
 }
 
+const viteBuildClient = async () => {
+  await build({ ...clientConfig, mode: 'production' }).catch(_ => {})
+}
+const viteBuildServer = async () => {
+  await build({ ...serverConfig, mode: 'production' })
+}
+
 export {
   viteBuild,
   viteStart,
+  viteBuildClient,
+  viteBuildServer,
   serverConfig,
   clientConfig
 }

@@ -1,27 +1,21 @@
 import * as Vue from 'vue'
-import { findRoute, getManifest, logGreen, normalizePath, addAsyncChunk } from 'ssr-server-utils'
+import { findRoute, getManifest, logGreen, normalizePath, getAsyncCssChunk, getAsyncJsChunk, getUserScriptVue, remInitial, setStore } from 'ssr-common-utils'
 import { ISSRContext, IConfig } from 'ssr-types'
-import { sync } from 'vuex-router-sync'
+import { serialize } from 'ssr-serialize-javascript'
+import { createRenderer } from 'vue-server-renderer'
 import { Routes } from './create-router'
-import { IFeRouteItem, RoutesType } from './interface'
 import { createRouter, createStore } from './create'
+import { IFeRouteItem } from '../types'
 
-const serialize = require('serialize-javascript')
-const { FeRoutes, App, layoutFetch, Layout, PrefixRouterBase } = Routes as RoutesType
+const { renderToStream, renderToString } = createRenderer()
+const { FeRoutes, App, layoutFetch, Layout } = Routes
 
-const serverRender = async (ctx: ISSRContext, config: IConfig): Promise<Vue.Component> => {
-  const { cssOrder, jsOrder, dynamic, mode, customeHeadScript, customeFooterScript, isDev, parallelFetch, disableClientRender, prefix, isVite, clientPrefix } = config
+const serverRender = async (ctx: ISSRContext, config: IConfig) => {
+  const { mode, customeHeadScript, customeFooterScript, isDev, parallelFetch, prefix, isVite, clientPrefix, stream } = config
   const router = createRouter()
   const store = createStore()
-  const base = prefix ?? PrefixRouterBase // 以开发者实际传入的为最高优先级
-  sync(store, router)
-  let { path, url } = ctx.request
-
-  if (base) {
-    path = normalizePath(path, base)
-    url = normalizePath(url, base)
-  }
-
+  setStore(store)
+  const [path, url] = [normalizePath(ctx.request.path, prefix), normalizePath(ctx.request.url, prefix)]
   const routeItem = findRoute<IFeRouteItem>(FeRoutes, path)
 
   if (!routeItem) {
@@ -30,98 +24,73 @@ const serverRender = async (ctx: ISSRContext, config: IConfig): Promise<Vue.Comp
     If you create new folder or component file, please restart server by npm start
     `)
   }
-
-  let dynamicCssOrder = cssOrder
-  if (dynamic) {
-    dynamicCssOrder = cssOrder.concat([`${routeItem.webpackChunkName}.css`])
-    if (!isVite) {
-      dynamicCssOrder = await addAsyncChunk(dynamicCssOrder, routeItem.webpackChunkName)
-    }
-  }
+  const { fetch, webpackChunkName } = routeItem
+  const dynamicCssOrder = await getAsyncCssChunk(ctx, webpackChunkName, config)
+  const dynamicJsOrder = await getAsyncJsChunk(ctx, webpackChunkName, config)
   const manifest = await getManifest(config)
 
   const isCsr = !!(mode === 'csr' || ctx.request.query?.csr)
 
-  let layoutFetchData = {}
-  let fetchData = {}
+  let [layoutFetchData, fetchData] = [{}, {}]
 
   if (!isCsr) {
-    const { fetch } = routeItem
-    const currentFetch = fetch ? (await fetch()).default : null
     router.push(url)
-
-    // csr 下不需要服务端获取数据
-    if (parallelFetch) {
-      [layoutFetchData, fetchData] = await Promise.all([
-        layoutFetch ? layoutFetch({ store, router: router.currentRoute }, ctx) : Promise.resolve({}),
-        currentFetch ? currentFetch({ store, router: router.currentRoute }, ctx) : Promise.resolve({})
-      ])
-    } else {
-      layoutFetchData = layoutFetch ? await layoutFetch({ store, router: router.currentRoute }, ctx) : {}
-      fetchData = currentFetch ? await currentFetch({ store, router: router.currentRoute }, ctx) : {}
-    }
+    const currentFetch = fetch ? (await fetch()).default : null
+    const lF = layoutFetch ? layoutFetch({ store, router: router.currentRoute, ctx }, ctx) : Promise.resolve({})
+    const CF = currentFetch ? currentFetch({ store, router: router.currentRoute, ctx }, ctx) : Promise.resolve({});
+    [layoutFetchData, fetchData] = parallelFetch ? await Promise.all([lF, CF]) : [await lF, await CF]
   } else {
     logGreen(`Current path ${path} use csr render mode`)
   }
+
   const combineAysncData = Object.assign({}, layoutFetchData ?? {}, fetchData ?? {})
   const state = Object.assign({}, store.state ?? {}, combineAysncData)
-
   // @ts-expect-error
   const app = new Vue({
     router,
     store,
     render: function (h: Vue.CreateElement) {
-      const injectCss: Vue.VNode[] = []
-      dynamicCssOrder.forEach(css => {
-        if (manifest[css]) {
-          injectCss.push(
-            h('link', {
-              attrs: {
-                rel: 'stylesheet',
-                href: manifest[css]
-              }
-            })
-          )
-        }
-      })
-
-      const injectScript: Vue.VNode[] = (isVite && isDev) ? [h('script', {
-        attrs: {
-          type: 'module',
-          src: '/node_modules/ssr-plugin-vue/esm/entry/client-entry.js'
-        }
-      })] : jsOrder.map(js => h('script', {
-        attrs: {
-          src: manifest[js],
-          type: isVite ? 'module' : ''
-        }
-      }))
-      const viteClient = h('script', {
+      const injectCss = (isVite && isDev) ? [h('script', {
         attrs: {
           type: 'module',
           src: '/@vite/client'
         }
+      })] : dynamicCssOrder.map(css => manifest[css]).filter(Boolean).map(css => h('link', {
+        attrs: {
+          rel: 'stylesheet',
+          href: css
+        }
+      }))
+      const injectScript = (isVite && isDev) ? [h('script', {
+        attrs: {
+          type: 'module',
+          src: '/node_modules/ssr-plugin-vue/esm/entry/client-entry.js'
+        }
+      })] : dynamicJsOrder.map(js => manifest[js]).filter(Boolean).map(js => h('script', {
+        attrs: {
+          src: js,
+          type: isVite ? 'module' : 'text/javascript'
+        }
+      }))
+
+      const customeHeadScriptArr: Vue.VNode[] = getUserScriptVue(customeHeadScript, ctx, h, 'vue')
+      const customeFooterScriptArr: Vue.VNode[] = getUserScriptVue(customeFooterScript, ctx, h, 'vue')
+      const initialData = isCsr ? h('script', {
+        domProps: {
+          innerHTML: `window.__USE_VITE__=${isVite}; window.prefix="${prefix}";${clientPrefix ? `window.clientPrefix="${clientPrefix}"` : ''}`
+        }
+      }) : h('script', {
+        domProps: {
+          innerHTML: `window.__USE_SSR__=true; window.__INITIAL_DATA__ = ${serialize(state)};window.__USE_VITE__=${isVite}; window.prefix="${prefix}" ;${clientPrefix ? `window.clientPrefix="${clientPrefix}";` : ''}`
+        }
       })
-      const customeHeadScriptArr = customeHeadScript ? (Array.isArray(customeHeadScript) ? customeHeadScript : customeHeadScript(ctx))?.map(item => h('script', Object.assign({}, item.describe, {
-        domProps: {
-          innerHTML: item.content
+      const children = h('div', {
+        attrs: {
+          id: 'app'
         }
-      }))) : []
-
-      if (disableClientRender) {
-        customeHeadScriptArr.push(h('script', {
-          domProps: {
-            innerHTML: 'window.__disableClientRender__ = true'
-          }
-        }))
-      }
-
-      const customeFooterScriptArr = customeFooterScript ? (Array.isArray(customeFooterScript) ? customeFooterScript : customeFooterScript(ctx))?.map(item => h('script', Object.assign({}, item.describe, {
-        domProps: {
-          innerHTML: item.content
-        }
-      }))) : []
-
+      }, [h(App, {
+        props: { ctx, config, fetchData: combineAysncData, reactiveFetchData: { value: combineAysncData } }
+      })])
       return h(
         Layout,
         {
@@ -132,12 +101,9 @@ const serverRender = async (ctx: ISSRContext, config: IConfig): Promise<Vue.Comp
             slot: 'remInitial'
           }, [
             h('script', {}, [
-              "var w = document.documentElement.clientWidth / 3.75;document.getElementsByTagName('html')[0].style['font-size'] = w + 'px'"
+              remInitial
             ])
           ]),
-          (isVite && isDev) && h('template', {
-            slot: 'viteClient'
-          }, [viteClient]),
 
           h('template', {
             slot: 'customeHeadScript'
@@ -149,23 +115,13 @@ const serverRender = async (ctx: ISSRContext, config: IConfig): Promise<Vue.Comp
           h('template', {
             slot: 'children'
           }, [
-            h(App, {
-              props: { ctx, config, fetchData: combineAysncData, reactiveFetchData: { value: combineAysncData } }
-            })
+            children
           ]),
 
           h('template', {
             slot: 'initialData'
           }, [
-            isCsr ? h('script', {
-              domProps: {
-                innerHTML: `window.__USE_VITE__=${isVite}`
-              }
-            }) : h('script', {
-              domProps: {
-                innerHTML: `window.__USE_SSR__=true; window.__INITIAL_DATA__ =${serialize(state)};window.__USE_VITE__=${isVite};  ${base && `window.prefix="${base}";${clientPrefix && `window.clientPrefix="${clientPrefix}"`}`}`
-              }
-            })
+            initialData
           ]),
 
           h('template', {
@@ -174,14 +130,31 @@ const serverRender = async (ctx: ISSRContext, config: IConfig): Promise<Vue.Comp
 
           h('template', {
             slot: 'jsInject'
-          }, injectScript)
+          }, injectScript),
+
+          h('template', {
+            slot: 'injectHeader'
+          }, [
+            customeHeadScriptArr,
+            injectCss
+          ]),
+
+          h('template', {
+            slot: 'content'
+          }, [
+            children,
+            initialData,
+            customeFooterScriptArr,
+            injectScript
+          ])
         ]
       )
     }
   })
-  return app
+  return stream ? renderToStream(app) : await renderToString(app)
 }
 
 export {
-  serverRender
+  serverRender,
+  Routes
 }

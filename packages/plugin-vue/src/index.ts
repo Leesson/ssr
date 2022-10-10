@@ -1,4 +1,4 @@
-import { loadConfig } from 'ssr-server-utils'
+import { loadConfig } from 'ssr-common-utils'
 
 const { isVite } = loadConfig()
 
@@ -25,3 +25,4 @@ export function clientPlugin () {
 }
 
 export * from './tools/vite'
+export * from './types'

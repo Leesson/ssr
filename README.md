@@ -15,16 +15,16 @@
 <div align="center">
 <a href="https://github.com/zhangyuang/ssr/actions" target="_blank"><img src="https://github.com/zhangyuang/ssr/workflows/CI/badge.svg" alt="githubActions" />
 <a href="https://www.cypress.io/" target="_blank"><img src="https://img.shields.io/badge/cypress-dashboard-brightgreen.svg" alt="cypress" />
-<a href="https://npmcharts.com/compare/ssr" target="_blank"><img src="https://img.shields.io/npm/dm/ssr" alt="download" />
+<a href="https://npmcharts.com/compare/ssr-server-utils" target="_blank"><img src="https://img.shields.io/npm/dm/ssr" alt="download" />
 <a href="https://github.com/zhangyuang/ssr" target="_blank"><img src="https://img.shields.io/badge/node-%3E=12-green.svg?color=4dc71f" alt="Node" ></a>
 <a href="https://github.com/zhangyuang/ssr" target="_blank"><img src="https://img.shields.io/github/stars/zhangyuang/ssr.svg?color=4dc71f" alt="Node" ></a>
 </div>
-<br />
+<br /> 
 
 `ssr` 框架是为前端框架在服务端渲染的场景下所打造的开箱即用的服务端渲染框架。了解什么是服务端渲染请查看[文档](http://doc.ssr-fc.com/docs/features$ssr)
 
 此框架脱胎于 [egg-react-ssr](https://github.com/zhangyuang/egg-react-ssr) 项目和 `ssr` v4版本`（midway-faas + react ssr）`，在之前的基础上做了诸多演进，通过插件化的代码组织形式，支持任意服务端框架与任意前端框架的组合使用。开发者可以选择通过 `Serverless` 方式部署或是以传统 `Node.js` 的应用形式部署，并且我们专注于提升 `Serverless` 场景下服务端渲染应用的开发体验，打造了一站式的开发，发布应用服务的功能。最大程度提升开发者的开发体验，将应用的开发，部署成本降到最低。
-
+ 
 在最新的版本中，同时支持 `React` 和 `Vue2/Vue3` 作为服务端渲染框架且开发工具侧我们同样支持了最流行的 `Vite` 来提升应用的启动速度和 HMR 速度，且提供一键以 `Serverless` 的形式发布上云的功能。我们可以非常有自信说它是地球上最先进的 `ssr` 框架。如果你希望获得开箱即用的体验且能够一键部署上云，请选择 `ssr` 框架。
 
 阅读我们的 [官方文档](http://doc.ssr-fc.com/) 获得更加详细的了解。事实上文档本身便是用 `ssr` 框架开发并通过 `Serverless` 部署到阿里云服务
@@ -48,26 +48,65 @@
 
 <table>
 <tr>
-<td align="center"><a target="_blank" href="http://youku.com/"><img src="https://img.alicdn.com/tfs/TB17DTuXkH0gK0jSZPiXXavapXa-680-133.svg" width="100px;"/><br />
+<td align="center"><a target="_blank" href="http://youku.com/"><img src="https://img.alicdn.com/tfs/TB17DTuXkH0gK0jSZPiXXavapXa-680-133.svg" width="120"/><br />
  <sub><b>优酷视频
 </b></td>
-<td align="center"><a target="_blank" href="https://yulebao.alibaba.com/"><img src="https://gw.alicdn.com/tfs/TB1CmlIIFT7gK0jSZFpXXaTkpXa-190-46.png" width="100px;"/><br><sub><b>阿里影业娱乐宝
+<td align="center" style="width: 120px;"><a target="_blank" href="#"><img src="https://wxa-shop-1258344707.cos.ap-shanghai.myqcloud.com/test/cdn/c8e49fda-d8ef-4332-a2c0-8c9e571883f5.jpeg?sign=q-sign-algorithm%3Dsha1%26q-ak%3DAKIDtb4HEuJSLyJNCk11kCNHvIPGp8AvQfdK%26q-sign-time%3D1653378495%3B4294967040%26q-key-time%3D1653378495%3B4294967040%26q-header-list%3Dhost%26q-url-param-list%3D%26q-signature%3D2d09dc5ceec264a030da16b747477adf0ae5b647
+" width="120"/><br><sub><b>微信公众平台
 </b></sub></a></td>
-<td align="center"><a href="https://www.niuniuda.com/mall" target="_blank"><img src="https://img.alicdn.com/tfs/TB1df_8pBr0gK0jSZFnXXbRRXXa-160-60.png" width="100px;" alt="牛牛搭"/><br />
+<td align="center" style="height: 100px"><a href="#" target="_blank"><img src="https://res.wx.qq.com/op_res/wy4vvtyfqW8HjIfBKjba6TNEFBHuAApjJ1FjSQ37OVIdIYtylmiBm2ZeJ79SRtmT4IipU69bDNDw0Rrdnjd9yg
+" width="200px;margin: 20px 0" /><br />
+<a href="#" target="_bvlank"><b>腾讯体育
+</b></a></td>
+<td align="center" style="height: 100px"><a href="#" target="_blank"><img src="https://res.wx.qq.com/op_res/qc0sXfbvOvZFKVaDy9OLsqHfwHg6U4AemN2MP6YUxEo0EWpK6RyRcj70bIf3GEg5y_WA1wuv4HcfYi2FP7Awkw
+" width="200px;margin: 20px 0" /><br />
+<a href="#" target="_bvlank"><b>QQ会员
+</b></a></td>
+<td align="center" style="height: 100px"><a href="https://m.film.qq.com/x/tva-vip-center/" target="_blank"><img src="https://res.wx.qq.com/op_res/x7sWI9AfUK1QwH0EDhKp4e_bGWxYOQ_1RlZqBFy9JntJzaE4aRzNhVgmxLNloAFpSQ-mBr9X9pux3QlV9QHHvQ" width="200px;margin: 20px 0" /><br />
+<a href="https://m.film.qq.com/x/tva-vip-center/" target="_bvlank"><b>腾讯视频
+</b></a></td>
+<td align="center"><a href="https://www.niuniuda.com/mall" target="_blank"><img src="https://img.alicdn.com/tfs/TB1df_8pBr0gK0jSZFnXXbRRXXa-160-60.png" width="120" alt="牛牛搭"/><br />
 <a href="https://www.niuniuda.com/mall" target="_blank"><sub><b>牛牛搭
 </b></a></td>
 <td align="center"><a href="https://www.gszq.com/" target="_blank"><img src="https://www.gszq.com/static/media/icon-slogan.4d1c7974.png
-" width="100px;" alt="国盛证券"/><br />
+" width="120"/><br />
 <a href="https://www.gszq.com/" target="_bvlank"><sub><b>国盛证券
 </b></a></td>
-<td align="center"><a href="https://m.isle.org.cn" target="_blank"><img src="https://res.wx.qq.com/op_res/qzBjcpT1AZDopDDkEJfj5gKFADotYHTgD33lz9xvZUIj7VJaIR_8HE4lfOxwaiYBgi4V2xXm0xLmAcdQxF4IrQ" width="100px;" alt="三易科技"/><br />
+<td align="center"><a href="https://m.isle.org.cn" target="_blank"><img src="https://res.wx.qq.com/op_res/qzBjcpT1AZDopDDkEJfj5gKFADotYHTgD33lz9xvZUIj7VJaIR_8HE4lfOxwaiYBgi4V2xXm0xLmAcdQxF4IrQ" width="120" alt="三易科技"/><br />
 <a href="https://m.isle.org.cn" target="_bvlank"><sub><b>三易科技
 </b></a></td>
-<td align="center"><a href="https://help.seewo.com/" target="_blank"><img src="https://img.alicdn.com/tfs/TB11Xo3q4v1gK0jSZFFXXb0sXXa-350-55.png" width="100px;" alt="cvte"/><br /><a href="https://help.seewo.com/" target="_blank"><sub><b>希沃帮助中心
-</b></a></td>
-<td align="center"><a href="https://wecard.qq.com/index/" target="_blank"><img src="https://img.alicdn.com/tfs/TB1pTZGrFT7gK0jSZFpXXaTkpXa-164-164.jpg" width="100px;" alt="腾讯微卡"/><br />
+<td align="center"><a href="https://wecard.qq.com/index/" target="_blank"><img src="https://img.alicdn.com/tfs/TB1pTZGrFT7gK0jSZFpXXaTkpXa-164-164.jpg" width="120"/><br />
 <a href="https://wecard.qq.com/index/" target="_blank"><sub><b>腾讯微卡
 </b></a></td>
+</tr>
+<tr>
+<td align="center"><a href="https://syzs.qq.com/" target="_blank"><img src="images/syzs.png" width="120" alt="腾讯手游助手"/><br />
+<a href="https://syzs.qq.com/" target="_bvlank"><sub><b>腾讯手游助手
+</b></a></td>
+<td align="center"><a href="https://kcmall.b2bwings.com/home" target="_blank"><img src="https://img.alicdn.com/imgextra/i1/O1CN01P7CAop1h7qQ3noefa_!!6000000004231-2-tps-211-79.png" width="120" alt="国家现代农业科技创新中心"/><br />
+<a href="https://kcmall.b2bwings.com/home" target="_bvlank"><sub><b>国家现代农业科技创新中心
+</b></a></td>
+<td align="center"><a target="_blank" href="http://ssr-fc.com/"><img src="https://img.alicdn.com/tfs/TB13DzOjXP7gK0jSZFjXXc5aXXa-212-48.png" width="120"/><br><sub><b>部署于阿里云示例应用
+</b></sub></a></td>
+<td align="center"><a target="_blank" href="http://tx.ssr-fc.com/"><img src="http://s0.60logo.com/uploads/items/images/soft/180126/tengxunyun.svg" width="120"/><br><sub><b>部署于腾讯云示例应用
+</b></sub></a></td>
+<td align="center"><a href="https://www.100.com/" target="_blank"><img src="https://oss.bs2dl.100.com/hippo/config/f13ee98cfca7ce13888752c1261081b44bd356fd.png" width="120" /><br />
+<a href="https://www.100.com/" target="_bvlank"><sub><b>100教育
+</b></a></td>
+<td align="center" style="height: 100px"><a href="https://blog.dreamer2q.wang/" target="_blank"><img src="https://res.wx.qq.com/op_res/MxxGgjPFRiTgjiReUefs2aMce-SgNvxxTB9U87YYhcOu6KPw9er7r2Lc0ne-b90nFstTUpc8REDwpxfUreKV1g" width="200px;margin: 20px 0" alt="Dream2qBlog"/><br />
+<a href="https://blog.dreamer2q.wang/" target="_bvlank"><b>个人博客
+</b></a></td>
+<td align="center" style="height: 100px"><a href="https://jiawu.dewu.com" target="_blank"><img src="https://cdn.poizon.com/node-common/31116a45953ad8b468c6c832036aac88.png" width="200px;margin: 20px 0" alt="Dream2qBlog"/><br />
+<a href="https://jiawu.dewu.com" target="_bvlank"><b>得物
+</b></a></td>
+<td align="center"><a href="https://www.myweimai.com/#sectionOne" target="_blank"><img src="https://img.alicdn.com/tfs/TB16i3VrQT2gK0jSZPcXXcKkpXa-400-400.jpg" width="120" alt="微脉"/><br />
+<a href="https://www.myweimai.com/#sectionOne" target="_bvlank"><sub><b>微脉
+</b></a></td>
+<td align="center"><a href="hhttps://www.xdjy100.com/" target="_blank"><img src="https://res.wx.qq.com/shop/public/4a9526b5-0678-471a-bb98-d8545270f87f.png" width="120" alt="行动教育"/><br />
+<a href="https://www.xdjy100.com/" target="_bvlank"><sub><b>行动教育
+</b></a></td>
+</tr>
+<tr>
 <td align="center" style="height: 100px"><a href="https://www.habisummercamp.com/" target="_blank"><img src="https://res.wx.qq.com/op_res/XXUpF56bDue53vZadoCSPSnqKF3bZqPOQnqsPa_ngEARa0OUIW22pX7eKsftPb6pc5ny62cR_wXM4g5xJ7G3DQ
 " width="200px;margin: 20px 0" alt="Happy"/><br />
 <a href="https://www.habisummercamp.com/" target="_bvlank"><b>HappyPC
@@ -76,46 +115,28 @@
 " width="200px;margin: 20px 0" alt="Happy"/><br />
 <a href="https://m.habisummercamp.com/" target="_bvlank"><b>HappyMobile
 </b></a></td>
-</tr>
-<tr>
-<td align="center"><a href="https://syzs.qq.com/" target="_blank"><img src="images/syzs.png" width="100px;" alt="腾讯手游助手"/><br />
-<a href="https://syzs.qq.com/" target="_bvlank"><sub><b>腾讯手游助手
-</b></a></td>
-<td align="center"><a href="https://kcmall.b2bwings.com/home" target="_blank"><img src="https://img.alicdn.com/imgextra/i1/O1CN01P7CAop1h7qQ3noefa_!!6000000004231-2-tps-211-79.png" width="100px;" alt="国家现代农业科技创新中心"/><br />
-<a href="https://kcmall.b2bwings.com/home" target="_bvlank"><sub><b>国家现代农业科技创新中心
-</b></a></td>
-<td align="center"><a target="_blank" href="http://ssr-fc.com/"><img src="https://img.alicdn.com/tfs/TB13DzOjXP7gK0jSZFjXXc5aXXa-212-48.png" width="100px;"/><br><sub><b>部署于阿里云示例应用
+<td align="center" style="width: 120px;"><a target="_blank" href="https://yulebao.alibaba.com/"><img src="https://gw.alicdn.com/tfs/TB1CmlIIFT7gK0jSZFpXXaTkpXa-190-46.png" width="120"/><br><sub><b>阿里影业娱乐宝
 </b></sub></a></td>
-<td align="center"><a target="_blank" href="http://tx.ssr-fc.com/"><img src="http://s0.60logo.com/uploads/items/images/soft/180126/tengxunyun.svg" width="100px;"/><br><sub><b>部署于腾讯云示例应用
-</b></sub></a></td>
-<td align="center"><a href="https://www.100.com/" target="_blank"><img src="https://oss.bs2dl.100.com/hippo/config/f13ee98cfca7ce13888752c1261081b44bd356fd.png" width="100px;" alt="100教育"/><br />
-<a href="https://www.100.com/" target="_bvlank"><sub><b>100教育
-</b></a></td>
-<td align="center" style="height: 100px"><a href="https://m.film.qq.com/x/tva-vip-center/" target="_blank"><img src="https://res.wx.qq.com/op_res/x7sWI9AfUK1QwH0EDhKp4e_bGWxYOQ_1RlZqBFy9JntJzaE4aRzNhVgmxLNloAFpSQ-mBr9X9pux3QlV9QHHvQ" width="200px;margin: 20px 0" alt="腾讯视频"/><br />
-<a href="https://m.film.qq.com/x/tva-vip-center/" target="_bvlank"><b>腾讯视频
-</b></a></td>
-<td align="center" style="height: 100px"><a href="https://blog.dreamer2q.wang/" target="_blank"><img src="https://res.wx.qq.com/op_res/MxxGgjPFRiTgjiReUefs2aMce-SgNvxxTB9U87YYhcOu6KPw9er7r2Lc0ne-b90nFstTUpc8REDwpxfUreKV1g" width="200px;margin: 20px 0" alt="Dream2qBlog"/><br />
-<a href="https://blog.dreamer2q.wang/" target="_bvlank"><b>个人博客
-</b></a></td>
-<td align="center" style="height: 100px"><a href="https://jiawu.dewu.com" target="_blank"><img src="https://cdn.poizon.com/node-common/31116a45953ad8b468c6c832036aac88.png" width="200px;margin: 20px 0" alt="Dream2qBlog"/><br />
-<a href="https://jiawu.dewu.com" target="_bvlank"><b>得物
-</b></a></td>
-<td align="center"><a href="https://www.myweimai.com/#sectionOne" target="_blank"><img src="https://img.alicdn.com/tfs/TB16i3VrQT2gK0jSZPcXXcKkpXa-400-400.jpg" width="100px;" alt="微脉"/><br />
-<a href="https://www.myweimai.com/#sectionOne" target="_bvlank"><sub><b>微脉
-</b></a></td>
-</tr>
-<tr>
-<td align="center"><a target="_blank" href="https://campaign.vmate.com/vrbollywood"><img src="https://img.alicdn.com/tfs/TB17p6Vhbj1gK0jSZFOXXc7GpXa-512-512.png" width="100px;" alt="vmate 积分商城"/><br />
+<td align="center"><a target="_blank" href="https://campaign.vmate.com/vrbollywood"><img src="https://img.alicdn.com/tfs/TB17p6Vhbj1gK0jSZFOXXc7GpXa-512-512.png" width="120" alt="vmate 积分商城"/><br />
   <a target="_blank" href="https://job.alibaba.com/zhaopin/position_detail.htm?trace=qrcode_share&positionCode=GP524819"><sub><b>Vmate短视频
 </b></a></td>
-<td align="center"><a target="_blank" href="https://enjoysales.paat.com/"><img src="https://img.alicdn.com/tfs/TB1Ma0BiEY1gK0jSZFMXXaWcVXa-836-836.png" width="100px;" alt="火炽星原CRM"/><br />
+<td align="center"><a target="_blank" href="https://enjoysales.paat.com/"><img src="https://img.alicdn.com/tfs/TB1Ma0BiEY1gK0jSZFMXXaWcVXa-836-836.png" width="120" alt="火炽星原CRM"/><br />
 <a target="_blank" href="https://enjoysales.paat.com/"><sub><b>火炽星原CRM
 </b></a></td>
-<td align="center" style="height: 100px"><a href="https://www.paixin.com/" target="_blank"><img src="https://www.paixin.com/favicon.ico" width="200px;margin: 20px 0" alt="Happy"/><br />
+<td align="center" style="height: 100px"><a href="https://www.paixin.com/" target="_blank"><img src="https://www.paixin.com/favicon.ico" width="200px;margin: 20px 0" /><br />
 <a href="https://www.paixin.com/" target="_bvlank"><b>拍信创意
 </b></a></td>
-<td align="center"><a href="https://www.66tools.com/" target="_blank"><img src="https://cdn.66tools.com/extension/chrome_qrcode_avatar.png" width="100px;" alt="极速二维码"/><br />
+<td align="center"><a href="https://www.66tools.com/" target="_blank"><img src="https://cdn.66tools.com/extension/chrome_qrcode_avatar.png" width="120" alt="极速二维码"/><br />
 <a href="https://www.66tools.com/" target="_bvlank"><sub><b>极速二维码
+</b></a></td>
+<td align="center"><a href="https://help.seewo.com/" target="_blank"><img src="https://img.alicdn.com/tfs/TB11Xo3q4v1gK0jSZFFXXb0sXXa-350-55.png" width="120" alt="cvte"/><br /><a href="https://help.seewo.com/" target="_blank"><sub><b>希沃帮助中心
+</b></a></td>
+<td align="center"><a href="https://n8n8.cn/" target="_blank"><img src="https://static.jingzhuan.cn/static/portal/logo.png" width="120" alt="经传多赢股票网"/><br /><a href="https://n8n8.cn/" target="_blank"><sub><b>经传多赢股票网
+</b></a></td>
+</tr>
+<tr>
+<td align="center"><a href="https://www.sinovip.cn/home" target="_blank"><img src="https://res.wx.qq.com/shop/public/9e3d374e-5b54-4457-af2f-b457e544adc4.png" width="120" alt="中商全球图书采选平台
+"/><br /><a href="https://www.sinovip.cn/home" target="_blank"><sub><b>中商全球图书采选平台
 </b></a></td>
 </tr>
 </table>
@@ -127,31 +148,32 @@
 - 🧲　插件驱动：基于插件架构，用户更加专注于业务逻辑；
 - 💯　Serverless优先：一键发布到各种Serverless平台，也支持传统Web Server，比如Egg、Midway、Nest等。
 - 🛡　高可用场景，可无缝从SSR降级到CSR，最佳容灾方案。
-- 😄　功能丰富，构建工具支持 Webpack/Vite，全新的 `Vue3 Script Setup` 支持
+- 😄　功能丰富，构建工具同时支持 Webpack/Vite，支持四种渲染模式 `SSR|CSR|SSG|Html`
 
 ## 已实现的功能
 
 🚀 表示已经实现的功能
 
-| 里程碑                                                                 | 状态 |
-| ---------------------------------------------------------------------- | ---- |
-| 支持任意服务端框架与任意前端框架的组合使用。(Serverless/Midway/NestJS) + (React/Vue2/Vue3)             | 🚀   |
-| 最丝滑的 [vite](https://vite-design.surge.sh/) [支持](http://doc.ssr-fc.com/docs/features$vite) |  🚀    |
-| 最小而美的实现服务端渲染功能                           | 🚀   |
-| 针对Serverless 场景对代码包的大小的严格限制，将生产环境的代码包大小做到极致            | 🚀   |
-| 同时支持约定式前端路由和声明式前端路由                            | 🚀   |
-| 摒弃传统模版引擎，所有页面元素统一使用前端组件作为 DSL          | 🚀   |
-| 同时支持三种渲染模式，提供服务端渲染一键降级为客户端渲染的能力                           | 🚀   |
-| 统一不同框架服务端客户端的数据获取方式，做到高度复用                                 | 🚀   |
-| 类型友好，全面拥抱 TS                                | 🚀   |
-| 支持无缝接入 [antd](https://github.com/ant-design/ant-design) [vant](https://vant-contrib.gitee.io/vant/#/) 无需修改任何配置                             | 🚀   |
-| 支持使用 less 作为 css 预处理器                                                | 🚀   |
-| 微前端场景下无缝[使用](http://doc.ssr-fc.com/docs/features$faq#%E4%B8%8E%20micro-app%20%E7%BB%93%E5%90%88%E4%BD%BF%E7%94%A8)              | 🚀   |
-| React Hooks 实现极简的[数据管理](http://doc.ssr-fc.com/docs/features$communication#React%20%E5%9C%BA%E6%99%AF)方案，摒弃传统的 redux/dva 等数据管理方案                         |    🚀  |
-| Vue3 场景提供 [Pinia](https://pinia.vuejs.org/introduction.html#basic-example) 以及 [Provide/Inject](http://doc.ssr-fc.com/docs/features$communication#Vue%20%E5%9C%BA%E6%99%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88) 代替 `Vuex` 进行跨组件通信                     |    🚀  |
-| 支持在阿里云 [云平台](https://zhuanlan.zhihu.com/p/139210473)创建使用          | 🚀     |
-| ssr deploy 一键部署到[阿里云](https://www.aliyun.com/)平台           | 🚀   |
-| ssr deploy --tencent 无需修改任何配置一键部署到[腾讯云](https://cloud.tencent.com/)平台                                   | 🚀                                |
+| 里程碑                                                                                                                                                                                                                                          | 状态 |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| 支持任意服务端框架与任意前端框架的组合使用。(Serverless/Midway/NestJS) + (React/Vue2/Vue3)                                                                                                                                                      | 🚀    |
+| 最丝滑的 [vite](https://vite-design.surge.sh/) [支持](http://doc.ssr-fc.com/docs/features$vite)                                                                                                                                                 | 🚀    |
+| 最小而美的实现服务端渲染功能                                                                                                                                                                                                                    | 🚀    |
+| 支持[预渲染](http://doc.ssr-fc.com/docs/features$ssg)能力                                                                                                                                                                                                                   | 🚀    |
+| 针对Serverless 场景对代码包的大小的严格限制，将生产环境的代码包大小做到极致                                                                                                                                                                     | 🚀    |
+| 同时支持约定式前端路由和声明式前端路由                                                                                                                                                                                                          | 🚀    |
+| 摒弃传统模版引擎，所有页面元素统一使用前端组件作为 DSL                                                                                                                                                                                          | 🚀    |
+| 同时支持四种渲染模式，提供服务端渲染一键降级为客户端渲染的能力                                                                                                                                                                                  | 🚀    |
+| 统一不同框架服务端客户端的数据获取方式，做到高度复用                                                                                                                                                                                            | 🚀    |
+| 类型友好，全面拥抱 TS                                                                                                                                                                                                                           | 🚀    |
+| 支持无缝接入 [antd](https://github.com/ant-design/ant-design) [vant](https://vant-contrib.gitee.io/vant/#/) 无需修改任何配置                                                                                                                    | 🚀    |
+| 支持使用 less 作为 css 预处理器                                                                                                                                                                                                                 | 🚀    |
+| 微前端场景下无缝[使用](http://doc.ssr-fc.com/docs/features$faq#%E4%B8%8E%20micro-app%20%E7%BB%93%E5%90%88%E4%BD%BF%E7%94%A8)                                                                                                                    | 🚀    |
+| React Hooks 实现极简的[数据管理](http://doc.ssr-fc.com/docs/features$communication#React%20%E5%9C%BA%E6%99%AF)方案，摒弃传统的 redux/dva 等数据管理方案                                                                                         | 🚀    |
+| Vue3 场景提供 [Pinia](https://pinia.vuejs.org/introduction.html#basic-example) 以及 [Provide/Inject](http://doc.ssr-fc.com/docs/features$communication#Vue%20%E5%9C%BA%E6%99%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88) 代替 `Vuex` 进行跨组件通信 | 🚀    |
+| 支持在阿里云 [云平台](https://zhuanlan.zhihu.com/p/139210473)创建使用                                                                                                                                                                           | 🚀    |
+| ssr deploy 一键部署到[阿里云](https://www.aliyun.com/)平台                                                                                                                                                                                      | 🚀    |
+| ssr deploy --tencent 无需修改任何配置一键部署到[腾讯云](https://cloud.tencent.com/)平台                                                                                                                                                         | 🚀    |
 
 ## 方案对比
 
@@ -209,55 +231,48 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 
 ## 生态系统
 
-| Project | Status | Description |
-|---------|--------|-------------|
-| [ssr]          | [![ssr-status]][ssr] | cli for ssr framework |
-| [ssr-core-vue]          | [![ssr-core-vue-status]][ssr-core-vue] | core render for vue |
-| [ssr-core-react]          | [![ssr-core-react-status]][ssr-core-react] | core render for react |
-| [ssr-plugin-midway]          | [![ssr-plugin-midway-status]][ssr-plugin-midway] | provide start and build fetature by [midway@2.0](https://midwayjs.org/) |
-| [ssr-plugin-nestjs]          | [![ssr-plugin-nestjs-status]][ssr-plugin-nestjs] | provide start and build feature by [NestJS](https://docs.nestjs.com/) |
-| [ssr-plugin-react]          | [![ssr-plugin-react-status]][ssr-plugin-react] | develop react application only be used in development |
-| [ssr-plugin-vue]          | [![ssr-plugin-vue-status]][ssr-plugin-vue] | develop vue2 application only be used in development |
-| [ssr-plugin-vue3]          | [![ssr-plugin-vue3-status]][ssr-plugin-vue3] | develop vue3 application only be used in development |
-| [ssr-server-utils]          | [![ssr-server-utils-status]][ssr-server-utils] | server utils in Node.js environment |
-| [ssr-client-utils]          | [![ssr-client-utils-status]][ssr-client-utils] | client utils in browser environment |
-| [ssr-hoc-react]          | [![ssr-hoc-react-status]][ssr-hoc-react] | provide hoc component for react |
-| [ssr-hoc-vue3]          | [![ssr-hoc-vue3-status]][ssr-hoc-vue3] | provide hoc component for vue3 |
-| [ssr-types]          | [![ssr-types-status]][ssr-types] | provide common types |
-| [ssr-types-react]          | [![ssr-types-react-status]][ssr-types-react] | provide react scene types |
-| [ssr-webpack]          | [![ssr-webpack-status]][ssr-webpack] | start local server and build production bundle by webpack |
+| Project             | Status                                           | Description                                                             |
+| ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| [ssr]               | [![ssr-status]][ssr]                             | cli for ssr framework                                                   |
+| [ssr-core-vue]      | [![ssr-core-vue-status]][ssr-core-vue]           | core render for vue                                                     |
+| [ssr-core-react]    | [![ssr-core-react-status]][ssr-core-react]       | core render for react                                                   |
+| [ssr-plugin-midway] | [![ssr-plugin-midway-status]][ssr-plugin-midway] | provide start and build fetature by [midway@2.0](https://midwayjs.org/) |
+| [ssr-plugin-nestjs] | [![ssr-plugin-nestjs-status]][ssr-plugin-nestjs] | provide start and build feature by [NestJS](https://docs.nestjs.com/)   |
+| [ssr-plugin-react]  | [![ssr-plugin-react-status]][ssr-plugin-react]   | develop react application only be used in development                   |
+| [ssr-plugin-vue]    | [![ssr-plugin-vue-status]][ssr-plugin-vue]       | develop vue2 application only be used in development                    |
+| [ssr-plugin-vue3]   | [![ssr-plugin-vue3-status]][ssr-plugin-vue3]     | develop vue3 application only be used in development                    |
+| [ssr-common-utils]  | [![ssr-common-utils-status]][ssr-common-utils]   | common utils in Node.js environment and browser                         |
+| [ssr-hoc-react]     | [![ssr-hoc-react-status]][ssr-hoc-react]         | provide hoc component for react                                         |
+| [ssr-hoc-vue3]      | [![ssr-hoc-vue3-status]][ssr-hoc-vue3]           | provide hoc component for vue3                                          |
+| [ssr-types]         | [![ssr-types-status]][ssr-types]                 | provide common types                                                    |
+| [ssr-webpack]       | [![ssr-webpack-status]][ssr-webpack]             | start local server and build production bundle by webpack               |
 
 
 [ssr-status]: https://img.shields.io/npm/v/ssr.svg
-[ssr-client-utils-status]: https://img.shields.io/npm/v/ssr-client-utils.svg
 [ssr-core-react-status]: https://img.shields.io/npm/v/ssr-core-react.svg
 [ssr-core-vue-status]: https://img.shields.io/npm/v/ssr-core-vue.svg
 [ssr-hoc-react-status]: https://img.shields.io/npm/v/ssr-hoc-react.svg
 [ssr-hoc-vue3-status]: https://img.shields.io/npm/v/ssr-hoc-vue3.svg
+[ssr-common-utils-status]: https://img.shields.io/npm/v/ssr-common-utils.svg
 [ssr-plugin-midway-status]: https://img.shields.io/npm/v/ssr-plugin-midway.svg
 [ssr-plugin-nestjs-status]: https://img.shields.io/npm/v/ssr-plugin-nestjs.svg
 [ssr-plugin-react-status]: https://img.shields.io/npm/v/ssr-plugin-react.svg
 [ssr-plugin-vue-status]: https://img.shields.io/npm/v/ssr-plugin-vue.svg
 [ssr-plugin-vue3-status]: https://img.shields.io/npm/v/ssr-plugin-vue3.svg
-[ssr-server-utils-status]: https://img.shields.io/npm/v/ssr-server-utils.svg
-[ssr-types-status]: https://img.shields.io/npm/v/ssr-types.svg
-[ssr-types-react-status]: https://img.shields.io/npm/v/ssr-types-react.svg
 [ssr-webpack-status]: https://img.shields.io/npm/v/ssr-webpack.svg
 
 [ssr]: https://github.com/zhangyuang/ssr/tree/dev/packages/cli
-[ssr-client-utils]: https://github.com/zhangyuang/ssr/tree/dev/packages/client-utils
 [ssr-core-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/core-react
 [ssr-core-vue]: https://github.com/zhangyuang/ssr/tree/dev/packages/core-vue
 [ssr-hoc-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/hoc-react
 [ssr-hoc-vue3]: https://github.com/zhangyuang/ssr/tree/dev/packages/hoc-vue3
 [ssr-plugin-midway]: https://github.com/zhangyuang/ssr/tree/dev/packages/plugin-midway
+[ssr-common-utils]: https://github.com/zhangyuang/ssr/tree/dev/packages/utils
 [ssr-plugin-nestjs]: https://github.com/zhangyuang/ssr/tree/dev/packages/plugin-nestjs
 [ssr-plugin-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/plugin-react
 [ssr-plugin-vue]: https://github.com/zhangyuang/ssr/tree/dev/packages/plugin-vue
 [ssr-plugin-vue3]: https://github.com/zhangyuang/ssr/tree/dev/packages/plugin-vue3
-[ssr-server-utils]: https://github.com/zhangyuang/ssr/tree/dev/packages/server-utils
 [ssr-types]: https://github.com/zhangyuang/ssr/tree/dev/packages/types
-[ssr-types-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/types-react
 [ssr-webpack]: https://github.com/zhangyuang/ssr/tree/dev/packages/webpack
 ## CONTRIBUTING
 
@@ -278,6 +293,32 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 <img src="https://res.wx.qq.com/op_res/Nv12X2und927FEOvJ5iflzX-WBW07GSC22kumTCiShZnudKpG0jMuRs70ecHQb3Hy1QjjaASNzyOuMgHr43Wpw" width="300">
 </div>
 
+## 项目捐赠
+
+如果本项目能够对你有所帮助，希望得到来自于你的捐赠 ☕️ 为开源社区做一份贡献
+<div style="display:flex">
+<img src="https://res.wx.qq.com/op_res/iFZOgoe_-KP8Y-EfgfZkEEQ4fU2WcAhMbubL3CFq9VbCktQyiUO5tnJouMfJhvBX4JQ2Wio1Pw04PR68MBjbwQ" width="150">
+<img src="https://res.wx.qq.com/op_res/9jSx7WJn6FBlfQ0ColL4hnvX91D9MlB_XPCgLFM527qknHp0utXZkLah6MYcumdVejK4884dvgkY0NIbBLPrYg" width="150">
+</div>
+
+## 代码行数
+
+```bash
+$ cloc packages --include-ext=ts
+     993 text files.
+     679 unique files.
+     829 files ignored.
+
+github.com/AlDanial/cloc v 1.90  T=0.62 s (264.7 files/s, 9026.5 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+TypeScript                     164            471            195           4927
+-------------------------------------------------------------------------------
+SUM:                           164            471            195           4927
+-------------------------------------------------------------------------------
+```
+
 ## 前端开发手册
 
 [如何打造舒适高效的前端开发环境](http://fe.ssr-fc.com/)
@@ -285,7 +326,3 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 ## 项目 Star 数增长趋势
 
 [![Stargazers over time](https://starchart.cc/zhangyuang/ssr.svg)](https://starchart.cc/zhangyuang/ssr)
-
-## 代码行数
-
-![](https://res.wx.qq.com/op_res/sE2C4qCTn9IN1dyiw4MMTEU9dW40eFXbfWe6-o31-kWEJN0ddQKR41_ZbAwAE01oW5yQj4zV3UJ_rVbX0D99Mw)

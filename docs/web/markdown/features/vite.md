@@ -93,11 +93,9 @@ export { userConfig }
 
 正如上文所说的，开发者有多种开发构建组合方式。只要不使用只能够在特定平台运行的代码例如 `import.meta.env/module.hot` 这些代码，那么你的代码在 `Vite/Webpack` 模式下都能够本地运行，生产环境构建成功。所以不建议开发者使用只能在特定工具下运行成功的代码以及配置。框架将会在之后将不同的工具的配置进行打平，抛出一个共同使用的配置项供开发者使用。
 
-在生产环境构建上尽管我们也支持了 `Vite` 并且能够运行成功, 但目前看来 `Vite` 底层使用的 `Rollup` 更适合用来构建库，用来构建应用确实有些别扭(也有可能是本人使用的姿势不对还在探索当中)。目前会有一些小瑕疵问题还未解决，不过不用担心在之后的版本中我们将会不断优化这一块。
+综上所述，我们已经迈出了最困难的一步，接下来的做法就是抹平 `Vite/Webpack` 在本框架中的使用差异，配置差异，构建差异。做到 `Webpack/Vite` 无缝切换
 
-综上所述，我们已经迈出了最困难的一步，接下来的做法就是抹平 `Vite/Webpack` 在本框架中的使用差异，配置差异，构建差异。特别是在 `UI` 框架使用这一块，我们之后将会集成一些配置，使得可以在 `Vite` 场景下无缝使用各大流行 `UI` 库例如 `antd`, `vant` 等等而无需做任何额外的配置。也欢迎各位开发者的深度使用以及问题反馈
-
-### 踩坑记录
+<!-- ### 踩坑记录
 
 以下记录开发 `vite ssr` 时遇见的问题，给其他框架开发者作为参考
 
@@ -227,8 +225,6 @@ app.useStaticAssets(join(getCwd(), './build/client'))
 
 ```json
 "scripts": {
-  "prod:vite": "ssr build --vite && egg-scripts start --port=3000 --title=midway-server-my_midway_project --framework=@midwayjs/web",
-  "stop": "egg-scripts stop --title=midway-server-my_midway_project",
   "start:vite": "ssr start --vite",
   "build:vite": "ssr build --vite"
 }
@@ -355,4 +351,4 @@ const render = (await vite.ssrLoadModule('/src/entry-server.js')).render
 注: 切记，我们只会在 `本地开发` 阶段使用 `Vite`，生产环境仍然用 `Webpack` 进行构建。所以请不要依赖只能够在 `Vite` 场景生效的 `vite.config.js` 配置。建议只使用默认生成的 config 文件具备的功能来保持本地开发与生产环境行为一致。否则你需要同时在 `Vite` `Webpack` 场景保持配置的一致性
 ### 未来展望
 
-并不排除未来本框架会提供 `All in Vite` 的方案，来将 `Vite` 与 `Webpack` 完全分离供开发者使用
+并不排除未来本框架会提供 `All in Vite` 的方案，来将 `Vite` 与 `Webpack` 完全分离供开发者使用 -->

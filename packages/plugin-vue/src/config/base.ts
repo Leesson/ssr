@@ -1,11 +1,11 @@
 
 import { join } from 'path'
 import { Mode } from 'ssr-types'
-import { getCwd, loadConfig, getLocalNodeModules, setStyle, addImageChain, loadModuleFromFramework } from 'ssr-server-utils'
+import { getCwd, loadConfig, setStyle, addImageChain, loadModuleFromFramework } from 'ssr-common-utils'
 import * as webpack from 'webpack'
 import * as WebpackChain from 'webpack-chain'
 
-const MiniCssExtractPlugin = require(loadModuleFromFramework('mini-css-extract-plugin'))
+const MiniCssExtractPlugin = require(loadModuleFromFramework('ssr-mini-css-extract-plugin'))
 const WebpackBar = require('webpackbar')
 const loadModule = loadModuleFromFramework
 
@@ -61,7 +61,7 @@ const addBabelLoader = (chain: WebpackChain.Rule<WebpackChain.Module>, envOption
 
 const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   const config = loadConfig()
-  const { moduleFileExtensions, useHash, isDev, chainBaseConfig, corejsOptions, ssrVueLoaderOptions, csrVueLoaderOptions, babelExtraModule, alias, define } = config
+  const { moduleFileExtensions, useHash, chainBaseConfig, corejsOptions, ssrVueLoaderOptions, csrVueLoaderOptions, babelExtraModule, alias, define } = config
 
   let vueLoaderOptions = {
     babelParserPlugins: ['jsx', 'classProperties', 'decorators-legacy']
@@ -92,9 +92,6 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .modules
     .add('node_modules')
     .add(join(getCwd(), './node_modules'))
-    .when(isDev, chain => {
-      chain.add(getLocalNodeModules())
-    })
     .end()
     .extensions.merge(moduleFileExtensions)
     .end()
@@ -113,6 +110,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .loader(loadModule('vue-loader'))
     .options(vueLoaderOptions)
     .end()
+
   chain
     .plugin('vue-loader')
     .use(require('vue-loader/lib/plugin'))
@@ -120,8 +118,6 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   chain.module
     .rule('mjs')
     .test(/\.mjs/)
-    .include
-    .add(/node_modules/).end()
     .type('javascript/auto')
     .end()
 
@@ -136,7 +132,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .rule('compileBabelForExtraModule')
     .test(/\.(js|mjs|jsx|ts|tsx)$/)
     .include
-    .add([/ssr-plugin-vue/, /ssr-client-utils/])
+    .add([/ssr-plugin-vue/, /ssr-client-utils/, /ssr-common-utils/])
 
   let babelForExtraModule
   if (babelExtraModule) {
@@ -172,8 +168,8 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     })
 
   chain.plugin('minify-css').use(MiniCssExtractPlugin, [{
-    filename: useHash ? 'static/css/[name].[contenthash:8].css' : 'static/css/[name].css',
-    chunkFilename: useHash ? 'static/css/[name].[contenthash:8].chunk.css' : 'static/css/[name].chunk.css'
+    filename: useHash ? '[name].[contenthash:8].css' : 'static/[name].css',
+    chunkFilename: useHash ? '[name].[contenthash:8].chunk.css' : 'static/[name].chunk.css'
   }])
 
   chain.plugin('webpackBar').use(new WebpackBar({
@@ -182,12 +178,13 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   }))
 
   chain.plugin('ssrDefine').use(webpack.DefinePlugin, [{
+    ...process.env,
     __isBrowser__: !isServer,
     ...(isServer ? define?.server : define?.client),
     ...define?.base
   }])
 
-  chainBaseConfig(chain)
+  chainBaseConfig(chain, isServer)
   return config
 }
 

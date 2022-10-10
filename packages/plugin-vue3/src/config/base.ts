@@ -1,11 +1,11 @@
 
 import { join } from 'path'
 import { Mode } from 'ssr-types'
-import { getCwd, loadConfig, getLocalNodeModules, setStyle, addImageChain, loadModuleFromFramework } from 'ssr-server-utils'
+import { getCwd, loadConfig, setStyle, addImageChain, loadModuleFromFramework } from 'ssr-common-utils'
 import * as webpack from 'webpack'
 import * as WebpackChain from 'webpack-chain'
 
-const MiniCssExtractPlugin = require(loadModuleFromFramework('mini-css-extract-plugin'))
+const MiniCssExtractPlugin = require(loadModuleFromFramework('ssr-mini-css-extract-plugin'))
 const WebpackBar = require('webpackbar')
 
 const loadModule = loadModuleFromFramework
@@ -65,11 +65,15 @@ const addBabelLoader = (chain: WebpackChain.Rule<WebpackChain.Module>, envOption
 
 const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   const config = loadConfig()
-  const { moduleFileExtensions, useHash, isDev, chainBaseConfig, locale, corejsOptions, ssrVueLoaderOptions, csrVueLoaderOptions, babelExtraModule, alias, define } = config
+  const { moduleFileExtensions, useHash, chainBaseConfig, locale, corejsOptions, ssrVueLoaderOptions, csrVueLoaderOptions, babelExtraModule, alias, define } = config
 
   let vueLoaderOptions = {
-    babelParserPlugins: ['jsx', 'classProperties', 'decorators-legacy']
+    babelParserPlugins: ['jsx', 'classProperties', 'decorators-legacy'],
+    compilerOptions: {
+      isCustomElement: (tag: string) => tag.includes('micro')
+    }
   }
+
   if (isServer && ssrVueLoaderOptions) {
     vueLoaderOptions = {
       vueLoaderOptions,
@@ -95,7 +99,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .merge(['.mjs', '.js', '.jsx', '.vue', '.json', '.wasm'])
     .end()
   chain.module
-    .noParse(/^(vue|vue-router|vuex|vuex-router-sync)$/)
+    .noParse(/^(vue|vue-router|vuex)$/)
 
   chain.mode(mode)
 
@@ -105,9 +109,6 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .modules
     .add('node_modules')
     .add(join(getCwd(), './node_modules'))
-    .when(isDev, chain => {
-      chain.add(getLocalNodeModules())
-    })
     .end()
     .extensions.merge(moduleFileExtensions)
     .end()
@@ -125,6 +126,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .use('vue-loader')
     .loader(loadModule('vue-loader')).options(vueLoaderOptions)
     .end()
+
   chain
     .plugin('vue-loader')
     .use(require(loadModule('vue-loader')).VueLoaderPlugin)
@@ -132,8 +134,6 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   chain.module
     .rule('mjs')
     .test(/\.mjs/)
-    .include
-    .add(/node_modules/).end()
     .type('javascript/auto')
     .end()
 
@@ -166,7 +166,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .rule('compileBabelForExtraModule')
     .test(/\.(js|mjs|jsx|ts|tsx)$/)
     .include
-    .add([/ssr-plugin-vue3/, /ssr-client-utils/, /ssr-hoc-vue/, /vue/])
+    .add([/ssr-plugin-vue3/, /ssr-client-utils/, /ssr-hoc-vue/, /vue/, /ssr-common-utils/])
 
   let babelForExtraModule
   if (babelExtraModule) {
@@ -203,16 +203,16 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     })
 
   chain.plugin('minify-css').use(MiniCssExtractPlugin, [{
-    filename: useHash ? 'static/css/[name].[contenthash:8].css' : 'static/css/[name].css',
-    chunkFilename: useHash ? 'static/css/[name].[contenthash:8].chunk.css' : 'static/css/[name].chunk.css'
+    filename: useHash ? '[name].[contenthash:8].css' : 'static/[name].css',
+    chunkFilename: useHash ? '[name].[contenthash:8].chunk.css' : 'static/[name].chunk.css'
   }])
 
   chain.plugin('webpackBar').use(new WebpackBar({
     name: isServer ? 'server' : 'client',
     color: isServer ? '#f173ac' : '#45b97c'
   }))
-
   chain.plugin('ssrDefine').use(webpack.DefinePlugin, [{
+    ...process.env,
     __isBrowser__: !isServer,
     __VUE_OPTIONS_API__: true,
     __VUE_PROD_DEVTOOLS__: false,
@@ -220,7 +220,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     ...define?.base
   }])
 
-  chainBaseConfig(chain)
+  chainBaseConfig(chain, isServer)
   return config
 }
 

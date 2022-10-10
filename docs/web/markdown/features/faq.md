@@ -8,31 +8,39 @@
 
 本章节讲述如何特殊自定义处理 `404`, `500` 等异常情况。
 
-以 `404` 为例，我们在中间件中处理异常情况，以下代码以服务端使用 [Midway.js](https://www.yuque.com/midwayjs/midway_v2/web_middleware#ML31g) 为例讲述如何使用
+以 `404` 为例，我们在中间件中处理异常情况，以下代码以服务端使用 [Midway.js](https://midwayjs.org/en/docs/middleware#%E7%BC%96%E5%86%99%E4%B8%AD%E9%97%B4%E4%BB%B6) 为例讲述如何使用
 
 ```js
 // /src/middleware/NotFound.ts
-import { Provide } from '@midwayjs/decorator'
-import { IWebMiddleware, IMidwayWebNext } from '@midwayjs/web'
-import { Context } from 'egg'
+import { Middleware } from '@midwayjs/decorator';
+import type { IMiddleware } from '@midwayjs/core';
+import type { NextFunction, Context } from '@midwayjs/koa';
 
-@Provide()
-export class NotFoundMiddleware implements IWebMiddleware {
+@Middleware()
+export class NotFoundMiddleware implements IMiddleware<Context, NextFunction> {
   resolve () {
-    return async (ctx: Context, next: IMidwayWebNext) => {
-      await next()
-      if (ctx.status === 404) {
-        // 手动建立 /web/pages/404 相关文件 
-        ctx.redirect('/404')
+    return async (ctx: Context, next: NextFunction) => {
+      try {
+        await next()
+      } catch (error) {
+        if (ctx.status === 404) {
+          // 手动建立 /web/pages/404 相关文件 
+          ctx.redirect('/404')
+        }
       }
     }
   }
 }
 
-// /src/config/config.default.ts
-config.middleware = [
-  'notFoundMiddleware'
-];
+// /src/configuration.ts
+export class ContainerLifeCycle {
+  async onReady() {
+
+    this.app.useMiddleware(NotFoundMiddleware);
+
+    await initialSSRDevProxy(this.app);
+  }
+}
 
 ```
 
@@ -317,20 +325,32 @@ export default {
 ```
 ### Vue3 全局注册组件
 
-最新更新： 在之后的版本中我们将移除 `window.__VUE_APP__` 的挂载逻辑，请使用旧写法的开发者按照下面的写法改造
+最新更新： 在之后的版本中我们将移除 `window.__VUE_APP__` 的挂载逻辑，请使用旧写法的开发者按照下面的写法改造。
 
-```js
-// 在 layout/App.vue 中做一些全局的任务
-import { getCurrentInstance } from 'vue'
+```html
+// layout/App.vue
+<template>
+  <router-view :reactiveFetchData="reactiveFetchData" />
+</template>
+
+<script lang="ts" setup>
+  // 在这里我们可以通过 props.ssrApp 获取 Vue3 App 实例，也可以通过 getCurrentInstance(不建议) 来获取
+import { defineProps, App, getCurrentInstance } from 'vue'
 import { Button } from 'vant'
 
-export default {
-  created () {
-    const app = getCurrentInstance()?.appContext.app
-    app?.use(Button)
-    app?.component('xxx')
-  }
-}
+const props = defineProps<{
+  ssrApp: App,
+  reactiveFetchData: any,
+  asyncData: any
+}>()
+
+const app = props.ssrApp
+
+// const app = getCurrentInstance()?.appContext.app 写法 2
+app?.use(Button)
+app?.component('xxx')
+</script>
+
 ```
 
 ### Vue 场景使用自定义指令
@@ -387,6 +407,42 @@ this.$router.options.scrollBehavior = (to, from, savedPosition) {
   // always scroll to top
   return { top: 0 }
 }
+```
+
+### Vue 任意文件获取 Vuex 实例
+
+为了方便开发者在任意地方都能够使用 `Vuex` 实例，这里框架提供了 `useStore` api 可以在任意文件调用
+
+```js
+import { useStore } from 'ssr-common-utils'
+
+const store = useStore()
+
+```
+
+### Vue3 任意文件获取 Pinia 实例
+
+在服务端渲染过程中，当我们在非 `setup` 环境调用 `Pinia` 时，其自身并不一定能够准确的判断出当前的实例。在高并发场景可能会导致数据混乱，所以针对这种情况，我们需要手动调用 `api` 时传入当前正确的 `Pinia Instance` ，为了方便开发者在任意地方都能够使用 `Pinia` 实例，这里框架提供了 `usePinia` api 可以在任意文件调用
+
+
+```js
+import { usePinia } from 'ssr-common-utils'
+
+const pinia = usePinia()
+
+const data = usePiniaStore(pinia) // 非 setup 上下文调用时需要手动传入实例
+
+```
+### Vue3 任意文件获取 App 实例
+
+为了方便开发者在任意地方都能够使用 `App` 实例，这里框架提供了 `useApp` api 可以在任意文件调用
+
+```js
+import { useApp } from 'ssr-common-utils'
+
+const app = useApp()
+
+app.use('Plugin')
 ```
 
 ### 使用Vue3国际化插件
@@ -500,183 +556,126 @@ export default {
 
 ## 使用 UI 框架
 
-`React` 场景下我们已经对 [antd](https://ant.design/) 进行兼容，`Vue` 场景已经对 [vant](https://vant-contrib.gitee.io/vant/#/) [ant-design-vue](https://antdv.com/docs/vue/introduce-cn/) 进行兼容，开发者只需要安装组件库依赖后可以直接在组件中引用无需做任何额外配置。
+默认已经使用 [babel-plugin-import](https://www.npmjs.com/package/babel-plugin-import)集成按需语法引入的 `UI` 框架
 
-### 使用方式
+在 `Webpack` 场景可直接使用以下 `UI` 框架按需引入语法
 
-安装对应 `ui` 库相关依赖后可直接按需导入的方式使用
+- `React`: [antd](https://ant.design/)
+- `Vue`: [vant](https://vant-contrib.gitee.io/vant/#/), [ant-design-vue](https://antdv.com/docs/vue/introduce-cn/)
 
-#### antd
+在 `Vite` 场景可直接使用以下 `UI` 框架按需引入语法。若发现问题请及时提 `issue`, 我们将会尽快修复
 
-```shell
-$ npm install antd - D
-```
+- `React`: [antd](https://ant.design/)
+- `Vue`: [vant](https://vant-contrib.gitee.io/vant/#/),[element-plus](https://element-plus.org/zh-CN/),[ant-design-vue](https://antdv.com/docs/vue/introduce-cn/)
+
+`注：(暂不推荐 Vue + ant-design-vue，似乎在 SSR 场景会出现样式闪烁问题, 待 antv 官方修复)`
 
 ```js
+// 注意: 使用了按需引入的框架无法再使用全量引入的语法
+import vant from 'vant' // 将会报错
+import { Button } from 'vant' // 使用按需引入语法
 
-import { Button } from 'antd'
-
-<Button>btn<Button>
+// Vue3 场景使用
+const props = defineProps<{
+  ssrApp: App,
+  reactiveFetchData: any,
+  asyncData: any
+}>()
+props.ssrApp.use(Button)
 ```
 
+### 接入其他 UI 框架
+
+下面讲述如何按需引入的语法接入其他未默认集成的 `UI` 框架。若使用全量引入的语法，在大部分情况下无需做任何配置即可使用。  
+下方讲述的解决方案在 `Webpack` 场景下适用。`Vite` 场景请参考 [vite-plugin-style-import](https://www.npmjs.com/package/vite-plugin-style-import)
 #### antd-mobile
 
-根目录创建 `babel.config.js`，并写入如下内容
-
 ```js
-module.exports = { 
-    "plugins": [ 
-        ["import", { 
-            "libraryName": "antd-mobile", 
-             "libraryDirectory": 'lib',
-            "style": true 
-        }, 'antd-mobile'] 
-    ] 
-} 
-```
+// config.ts
+const userConfig: UserConfig = {
+  babelOptions: {
+    plugins: [
+      ["import", {
+        "libraryName": "antd-mobile",
+        "libraryDirectory": 'cjs/components',
+        "style": false
+      }, 'antd-mobile']
+    ] // 通常使用该配置新增 plugin
+  },
+  whiteList: [/antd-mobile/]
+}
+export { userConfig }
 
-组件使用
-
-```js
-
+// 在组件中使用
 import { Button } from 'antd-mobile'
 
-<Button>btn<Button>
-```
-#### vant
-
-根据具体框架安装使用 `vue2/3` 对应的 [vant](https://github.com/youzan/vant) 版本
-
-```shell
-$ npm install vant@next # vant in vue3
-```
-
-```html
-// 单个文件中使用
-<template>
-  <Button>button</Button>
-</template>
-<script>
-import { Button } from 'vant'
-
-export default {
-  components: {
-    Button
-  }
+render () {
+  return <Button>btn<Button>
 }
-</script>
 ```
-
-```html
-// Vue3 场景全局使用
-// layout/App.vue
-<template>
-  <van-button type="primary">主要按钮</van-button>
-</template>
-<script>
-import { Button } from 'vant'
-
-export default {
-  components: {
-    Button
-  },
-  created() {
-    const app = getCurrentInstance()?.appContext.app
-    app?.use(Button)
-  }
-}
-</script>
-```
-
 #### element-ui
 
-根目录创建 `babel.config.js`，并写入如下内容
 
 ```js
-module.exports = {
-    plugins: [
+// config.ts
+const userConfig = {
+  babelOptions: {
+   plugins: [
         [
-            "component",
+            "import",
             {
-              "libraryName": "element-ui",
-              "styleLibraryName": "theme-chalk"
+               "libraryName": "element-ui",
+              "styleLibraryDirectory": "lib/theme-chalk",
             }
-          ]
+        ]
     ]
+  }
 }
+export { userConfig }
 ```
 
-组件使用
-
-```html
-// Vue2 场景全局使用
-// layout/App.vue
-<template>
-  <van-button type="primary">主要按钮</van-button>
-</template>
-<script>
-import Vue from 'vue'
-import { Button } from 'element-ui'
-
-Vue.use(Button)
-
-</script>
-```
-### ui 框架接入原理
-
-若开发者需要使用其他 UI 框架不做额外配置是一定会报错的。这里以 [vant](https://vant-contrib.gitee.io/vant/#/) 举例子，讲述如何引入。`vant/antd` 系采用 `babel-plugin-import` 目录结构的 `ui` 框架皆可以采用该思路引入。
-
-`注: 本框架底层已经支持直接使用 antd, vant UI 框架，下列代表只是讲述原理，无需重复配置`
+#### element-plus
 
 ```js
-import Button from 'vant/lib/button';
-import 'vant/lib/button/style';
-```
+import type { UserConfig } from 'ssr-types'
+import { setStyle } from 'ssr-common-utils'
 
-使用手动按需引入的情况几乎不会出任何问题。但要注意
-
-1. 必须使用 `lib` 目录下的文件，不要用 `es`，`es` 格式的模块在服务端无法直接解析, 除非配置白名单让 Webpack 构建服务端文件时去处理，但这样会拖慢构建速度  
-2. 如果是直接 `import *.css|less` 文件则不会有问题，但很多 UI 框架例如 `antd`, `vant` 这些都会都导出一个 `js` 文件去 `require` 要用到的 `css|less` 文件，这种情况不做额外配置是一定会出错的  
-3. 样式可能会缺漏，因为导出的 `js` 文件除了包含组件本身的样式还会包含一些公共样式
-
-所以为了实现按需引入且保证样式的完整性，我们需要使用 `babel-plugin-import` 且需要在服务端做特殊处理, 这里需要额外在 `config.js` 配置白名单，使得服务端打包的时候让 `Webpack` 去处理这种类型的 `js` 文件
-
-```js
-// config.js
-
-module.exports = {
-  whiteList: [/vant.*?style/]
+const userConfig: UserConfig = {
+  chainBaseConfig: (chain, isServer) => {
+    setStyle(chain, /\.s[ac]ss$/i, {
+      rule: 'sass',
+      loader: 'sass-loader',
+      isServer,
+      importLoaders: 2, // 参考 https://www.npmjs.com/package/css-loader#importloaders
+    })
+  },
+  babelOptions: {
+    plugins: [
+      [
+        "import", {
+          "libraryName": "element-plus",
+          "customName": (name: string) => {
+            // 不一定能覆盖所有的组件引入语法，如果出错请自行查看该组件在 element-plus 的导出规则修改此方法
+            const name = name.replace('El', '').toLocaleLowerCase() // change ElButton to Button for setting current component path that `element-plus/lib/components/${name}/index.js`
+            return `element-plus/lib/components/${name}/index.js`
+          },
+          "customStyleName": (name: string) => {
+            const name = name.replace('El', '').toLocaleLowerCase()
+            return `element-plus/lib/components/${name}/style/index.js`
+          }
+        }, 'element-plus']
+    ]
+  },
+  whiteList: [/element-plus.*?style/]
 }
+export { userConfig }
+// 代码使用
+import { ElButton } from 'element-plus'
 
 ```
-
-以 `antd/vant` 为例，它导出的是 `lib/Button/style/index.js` 文件 负责加载 `less` 文件, `lib/Button/style/css.js` 负责加载 `css` 文件
-
-使用 `babel-plugin-import` 来进行按需导入除了上面提到的 `whiteList` 配置之外还需要创建 `babel.config.js`
-
-```js
-// babel.config.js
-
-module.exports = {
-  plugins: [
-    ['import', {
-      libraryName: 'vant',
-      libraryDirectory: 'lib', // 这里一定要用 lib
-      style: true // true 代表 style/index.js 会加载 less 类型的文件
-    }, 'vant']
-  ]
-};
-```
-
-上述配置通过后，可通过按需引入的方式来引入组件
-
-```js
-import { Button } from 'antd'
-import { Button } from 'vant'
-```
-
 
 ## 引入其他 css 处理器
+
 
 ### 如何支持 Sass|SCSS
 
@@ -689,15 +688,16 @@ $ yarn add sass sass-loader@^10.0.0 -D # 必须安装 ^10.0.0 版本的 sass-loa
 ```
 
 ```js
-import { setStyle } from 'ssr-server-utils'
+import { setStyle } from 'ssr-common-utils'
 import type { UserConfig } from 'ssr-types'
 
 const userConfig: UserConfig = {
-  chainBaseConfig: (chain) => {
+  chainBaseConfig: (chain, isServer) => {
     // setStyle 的详细入参类型可查看  https://github.com/zhangyuang/ssr/blob/dev/packages/server-utils/src/webpack/setStyle.ts
     setStyle(chain, /\.s[ac]ss$/i, {
       rule: 'sass',
       loader: 'sass-loader',
+      isServer,
       importLoaders: 2 // 参考 https://www.npmjs.com/package/css-loader#importloaders
     })
   }
@@ -726,10 +726,33 @@ export default {
 }
 ```
 
-### taliwind.css
+### tailwind.css
 
-结合 [taliwind.css](https://tailwindcss.com/) 请参考 [ssr-taliwind](https://github.com/zhangyuang/ssr-taliwindcss)
+使用 `tailwind.css` 与框架无关，具体方案查看对应文档即可。下面贴出一种方案。配套使用 `VSCode` 对应插件一起使用更佳
 
+```js
+// 创建 tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ['./web/**/*.{vue,js,ts}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+// 创建 postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+};
+// web/common.less
+// 引入 tailwind 代码即可在 class 中使用对应类名
+@tailwind components;
+@tailwind utilities;
+
+```
 
 ## 是否考虑支持 SSG 静态渲染
 
@@ -741,15 +764,17 @@ export default {
 
 ### 与 micro-app 结合使用
 
-这里有一个结合 [micro-app](https://zeroing.jd.com/micro-app/) 使用的[示例](https://github.com/zhangyuang/micro-app-ssr)。目前看起来对应用的侵入性很小。个人非常喜欢这种方式。
+官方提供结合 [micro-app](https://zeroing.jd.com/micro-app/) 使用的[示例](https://github.com/zhangyuang/micro-app-ssr)。目前看起来对应用的侵入性很小。个人非常喜欢这种方式。同样也可以在创建项目时选择微前端类型的模版。我们已经在线上业务启用了该方案。
 
 ### 与 qiankun 结合使用
 
+建议使用 `micro-app` 作为微前端方案。与 `qiankun` 集成复杂度过高
+
 如果是在 [qiankun](https://qiankun.umijs.org/) 场景下使用，目前看来侵入性略大。
 
-首先开发者需要配置 `disableClientRender`，来禁用框架默认的客户端渲染逻辑的调用
+<!-- 首先开发者需要配置 `disableClientRender`，来禁用框架默认的客户端渲染逻辑的调用 -->
 
-```js
+<!-- ```js
 module.exports = {
     disableClientRender: true
 }
@@ -783,7 +808,7 @@ module.exports = {
   disableClientRender: true,
   chainClientConfig: chain => {
     // 只需要修改入口文件路径，其他配置可以沿用默认配置
-    const { loadConfig, getOutputPublicPath } = require('ssr-server-utils')
+    const { loadConfig, getOutputPublicPath } = require('ssr-common-utils')
     const { chunkName, getOutput, useHash } = loadConfig()
     const publicPath = getOutputPublicPath()
     chain.entry(chunkName)
@@ -791,15 +816,27 @@ module.exports = {
       .end()
       .output
       .path(getOutput().clientOutPut)
-      .filename(useHash ? 'static/js/[name].[contenthash:8].js' : 'static/js/[name].js')
-      .chunkFilename(useHash ? 'static/js/[name].[contenthash:8].chunk.js' : 'static/js/[name].chunk.js')
+      .filename(useHash ? '[name].[contenthash:8].js' : '[name].js')
+      .chunkFilename(useHash ? '[name].[contenthash:8].chunk.js' : '[name].chunk.js')
       .publicPath(publicPath)
       .end()
   }
 }
-```
+``` -->
 
 ## 实际业务问题
+
+### 定义环境变量
+
+这里的环境变量我们分为 `Node.js` 环境和 `浏览器` 环境。分别对应着 `src` 和 `web` 目录下的代码
+
+我们可以通过启动或构建时的命令行参数注入环境变量 `MYENV=1 ssr start` 如果是 `Windows` 系统则是 `set MYENV ssr start`。推荐使用[cross-env](https://www.npmjs.com/package/cross-env) 兼容所有系统环境
+
+在 `Node.js` 环境可直接使用读取 `process.env.MYENV` 读取。
+
+在 `浏览器环境` 框架会将环境变量注入构建上下文中，通过 `MYENV` 直接读取。此时效果等同于 `config.define` 配置提供的能力
+
+
 ### 如何自定义页面标题, meta 等信息
 
 开发者需要想清楚修改 `meta` 等 `head` 信息的目的是什么。如果只是单纯的前端页面展示，那么只需要在客户端通过 `document.title = xxx` 形式来修改即可。如果是为了满足 `SEO` 爬虫需求，则需要在服务端支出时渲染正确的信息。
@@ -813,7 +850,7 @@ module.exports = {
 ```html
 <template>
   <!-- 注：Layout 只会在服务端被渲染，不要在此运行客户端有关逻辑 -->
-  <!-- 页面初始化数据注入内容已经过 serialize-javascript 转义 防止 xss -->
+ 
   <html>
     <head>
       <meta charSet="utf-8">
@@ -829,18 +866,11 @@ module.exports = {
        <title>
         {{ pathToTitle(ctx.request.path) }}
       </title>
-      <!-- 初始化移动端 rem 设置，如不需要可自行删除 -->
       <slot name="remInitial" />
-      <!-- 用于通过配置插入自定义的 script 为了避免影响期望功能这块内容不做 escape，为了避免 xss 需要保证插入脚本代码的安全性  -->
-      <slot name="customeHeadScript" />
-      <slot name="cssInject" />
+      <slot name="injectHeader" />
     </head>
-    <body>
-      <div id="app">
-        <slot name="children" />
-      </div>
-      <slot name="initialData" />
-      <slot name="jsInject" />
+   <body>
+      <slot name="content" />
     </body>
   </html>
 </template>
@@ -908,7 +938,9 @@ const Layout = (props: LayoutProps) => {
 
 不建议图片资源放在 `web` 文件夹，对图片资源若非有小文件 `base64` 内联或者 `hash` 缓存的需求是不建议用 `Webpack` 去处理的，这样会使得 `Webpack` 的构建速度变慢。
 
-建议放在默认的静态资源文件夹即 `build` 文件夹，即可通过 `<img src="/foo.jpg">` 即可引入。由于 [egg-static](https://github.com/eggjs/egg-static) 支持数组的形式，也可以自行在根目录下创建 `public` 文件夹用于存放图片等静态资源。但记住这里需要额外将 `public` 文件夹设置为[静态资源文件夹](https://github.com/zhangyuang/ssr/blob/dev/example/midway-vue3-ssr/src/config/config.default.ts#L15)
+建议放在默认的静态资源文件夹即 `build|public` 文件夹，即可通过 `<img src="/foo.jpg">` 即可引入。或者使用单独的 `CDN` 图片服务(推荐)
+
+`注：针对绝对路径开头的图片地址框架底层将不会使用 css-loader 等 loader 进行处理，故若有图片资源的 publicPath 需求请自行通过 webpack-chain 添加额外规则处理`
 
 ### 如何让某个组件只在客户端渲染
 
@@ -1212,6 +1244,42 @@ $ ssr start --port 7001 # 等价于 midway-bin dev --port 7001
 
 ## 其他问题
 
+### 动态路由切换组件不重新渲染
+
+针对动态路由例如 `/user/:id` 之类的 `path`, 一些前端框架为了性能考虑，在路由跳转时将会复用组件实例造成组件不重新渲染的现象。
+
+例如在本框架中从 `/user/1` 跳转到 `/user/2` 时，`fetch` 方法被调用但组件并没有更新。解决方案有很多种，下面列出一些方案，根据实际情况选择
+
+#### Vue 场景
+
+通过添加 `router-view` 组件的 `key` 属性来防止组件被缓存
+
+```js
+// layout/App.vue
+<router-view :key="$route.fullPath" />
+```
+
+或者抽象 `fetch` 方法中的逻辑在 `watch route` 改变时调用
+
+或者通过 `fetchData` 的方式。来通过 `props` 获取数据来触发重新渲染
+
+```js
+// fetch.ts
+export default async ({ store, router, ctx }: Params) => {
+  return {
+    data: Math.random()
+  }
+}
+// render.vue
+import { defineProps } from 'vue'
+
+const props = defineProps<{data: string}>()
+```
+
+#### React 场景
+
+`React` 场景使用 `context` 理论上不会出现此问题，若遇到类似问题, 请提 `issue`
+
 ### class IssueWebpackError 报错
 
 错误原因：`Webpack` 多版本冲突查询依赖逻辑错误
@@ -1223,7 +1291,66 @@ $ ssr start --port 7001 # 等价于 midway-bin dev --port 7001
 ```json
 {
   "scripts": {
-    "postinstall:": "node ./node_modules/server-utils/postinstall.js"
+    "postinstall:": "node ./node_modules/ssr-common-utils/postinstall.js"
   }
 }
 ```
+
+## wasm(Webassembly) 支持
+
+在 `ssr` 框架中使用 [wasm](https://webassembly.org/) 以 [color-thief-wasm](https://github.com/zhangyuang/color-thief-wasm) 为例。
+
+这里讲述的是在浏览器中调用 `wasm`, 如果是在 `Node.js` 环境中调用则更加的简单
+
+`In Webpack`
+```bash
+$ yarn add color-thief-wasm-bundler
+```
+
+```js
+if (__isBrowser__) {
+  const foo = require('color-thief-wasm-bundler')
+  console.log(foo.get_color_thief([1,2,3,4], 64*64, 9,5))
+}
+```
+
+`In Vite`
+
+```bash
+$ yarn add color-thief-wasm-web
+```
+
+```js
+// config.ts
+
+export const userConfig = {
+  whiteList: [/color-thief-wasm-web/],
+  viteConfig: () => ({
+    clientConfig: {
+      otherConfig: {
+        optimizeDeps: {
+          exclude: ['color-thief-wasm-web']
+        }
+      }
+    }
+  })
+}
+
+// render.vue
+
+import init, { get_color_thief } from 'color-thief-wasm-web'
+
+if (__isBrowser__) {
+  init().then(() => {
+    console.log(get_color_thief([1,2,3,4], 64*64, 9,5))
+  })
+}
+```
+
+## 高性能产物构建
+
+在 `Vite` 模式下，框架实现了一种高性能的产物构建策略，来保证开发者只会加载到当前页面所必需的文件不会加载多余的文件，同时也不会在不同文件中构建重复的内容来保证 `bundle` 体积最小。
+
+在 `Webpack` 模式下，框架提供了 `ssr start|build --optimize` 选项来开启这一构建策略。这个过程中会借助 `Vite|Rollup` 的一些模块依赖分析的能力。所以会增加一些构建时间，开发者可只在构建生产环境产物时使用此配置。如果你使用过程中发现了什么问题，请提 [issue](https://github.com/zhangyuang/ssr/issues)。
+
+为了保证构建的性能最高，分析结果最准确。请尽量使用 `ESM Module(import / export)` 语法而不是 `CommonJS(require / module.exports)` 语法来导入导出模块。

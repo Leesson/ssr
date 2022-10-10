@@ -1,4 +1,4 @@
-import * as prompts from 'prompts'
+import prompts from 'prompts'
 import * as semver from 'semver'
 import * as colors from 'picocolors'
 import {
@@ -26,8 +26,6 @@ async function main (): Promise<void> {
 
   if (!pkg) return
 
-  await logRecentCommits(pkg)
-
   const { currentVersion, pkgName, pkgPath, pkgDir } = getPackageInfo(pkg)
 
   if (!targetVersion) {
@@ -50,6 +48,8 @@ async function main (): Promise<void> {
       targetVersion = release
     }
   }
+
+  await logRecentCommits(pkg, targetVersion)
 
   if (!semver.valid(targetVersion)) {
     throw new Error(`invalid target version: ${targetVersion}`)
@@ -81,9 +81,12 @@ async function main (): Promise<void> {
     'angular',
     '-i',
     'CHANGELOG.md',
-    '-s'
+    '-s',
+    '-r',
+    '1',
+    '-l',
+    pkgName
   ]
-  if (pkgName !== 'vite') changelogArgs.push('--lerna-package', pkgName)
   await run('npx', changelogArgs, { cwd: pkgDir })
 
   const { stdout } = await run('git', ['diff'], { stdio: 'pipe' })

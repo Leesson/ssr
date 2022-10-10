@@ -1,16 +1,16 @@
 
 import { join } from 'path'
 import { Mode } from 'ssr-types'
-import { getCwd, loadConfig, getLocalNodeModules, setStyle, addImageChain, loadModuleFromFramework } from 'ssr-server-utils'
+import { getCwd, loadConfig, setStyle, addImageChain, loadModuleFromFramework } from 'ssr-common-utils'
 import * as WebpackChain from 'webpack-chain'
 import * as webpack from 'webpack'
 
-const MiniCssExtractPlugin = require(loadModuleFromFramework('mini-css-extract-plugin'))
+const MiniCssExtractPlugin = require(loadModuleFromFramework('ssr-mini-css-extract-plugin'))
 const WebpackBar = require('webpackbar')
 const loadModule = loadModuleFromFramework
 
-const addBabelLoader = (chain: WebpackChain.Rule<WebpackChain.Module>, envOptions: any) => {
-  const { babelOptions } = loadConfig()
+const addBabelLoader = (chain: WebpackChain.Rule<WebpackChain.Module>, envOptions: any, isServer: boolean) => {
+  const { babelOptions, isDev } = loadConfig()
   chain.use('babel-loader')
     .loader(loadModule('babel-loader'))
     .options({
@@ -42,13 +42,13 @@ const addBabelLoader = (chain: WebpackChain.Rule<WebpackChain.Module>, envOption
         [loadModule('@babel/plugin-proposal-private-methods'), { loose: true }],
         [loadModule('@babel/plugin-proposal-private-property-in-object'), { loose: true }],
         ...babelOptions?.plugins ?? []
-      ]
+      ].concat((!isServer && isDev) ? loadModule('react-refresh/babel') : [])
     })
     .end()
 }
 const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   const config = loadConfig()
-  const { moduleFileExtensions, useHash, isDev, chainBaseConfig, corejsOptions, babelExtraModule, alias, define } = config
+  const { moduleFileExtensions, useHash, chainBaseConfig, corejsOptions, babelExtraModule, alias, define } = config
   const mode = process.env.NODE_ENV as Mode
   const envOptions = {
     modules: false,
@@ -62,9 +62,6 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .modules
     .add('node_modules')
     .add(join(getCwd(), './node_modules'))
-    .when(isDev, chain => {
-      chain.add(getLocalNodeModules())
-    })
     .end()
     .extensions.merge(moduleFileExtensions)
     .end()
@@ -88,8 +85,6 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   chain.module
     .rule('mjs')
     .test(/\.mjs/)
-    .include
-    .add(/node_modules/).end()
     .type('javascript/auto')
     .end()
 
@@ -97,7 +92,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .rule('compileBabelForExtraModule')
     .test(/\.(js|mjs|jsx|ts|tsx)$/)
     .include
-    .add([/ssr-plugin-react/, /ssr-client-utils/, /ssr-hoc-react/])
+    .add([/ssr-plugin-react/, /ssr-client-utils/, /ssr-hoc-react/, /ssr-common-utils/])
 
   let babelForExtraModule
   if (babelExtraModule) {
@@ -106,8 +101,8 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     babelForExtraModule = module.end().exclude.add(/core-js/).end()
   }
 
-  addBabelLoader(babelModule, envOptions)
-  addBabelLoader(babelForExtraModule, envOptions)
+  addBabelLoader(babelModule, envOptions, isServer)
+  addBabelLoader(babelForExtraModule, envOptions, isServer)
 
   setStyle(chain, /\.css$/, {
     rule: 'css',
@@ -134,8 +129,8 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     })
 
   chain.plugin('minify-css').use(MiniCssExtractPlugin, [{
-    filename: useHash ? 'static/css/[name].[contenthash:8].css' : 'static/css/[name].css',
-    chunkFilename: useHash ? 'static/css/[name].[contenthash:8].chunk.css' : 'static/css/[name].chunk.css'
+    filename: useHash ? '[name].[contenthash:8].css' : 'static/[name].css',
+    chunkFilename: useHash ? '[name].[contenthash:8].chunk.css' : 'static/[name].chunk.css'
   }])
 
   chain.plugin('webpackBar').use(new WebpackBar({
@@ -143,11 +138,12 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     color: isServer ? '#f173ac' : '#45b97c'
   }))
   chain.plugin('ssrDefine').use(webpack.DefinePlugin, [{
+    ...process.env,
     __isBrowser__: !isServer,
     ...(isServer ? define?.server : define?.client),
     ...define?.base
   }])
-  chainBaseConfig(chain)
+  chainBaseConfig(chain, isServer)
   return config
 }
 

@@ -8,16 +8,18 @@
     <div class="nav">
       <div class="nav_left" />
       <searchBox />
-      <router-link v-for="item in (isMobile ? headerItems.slice(0,3) : headerItems)" :key="item.path" :to="item.path">
+      <router-link v-for="item in (isMobile ? headerItems.slice(0, 3) : headerItems)" :key="item.path" :to="item.path">
         {{ item.label }}
       </router-link>
       <a target="__black" href="https://github.com/zhangyuang/ssr">
         Github
       </a>
-      <a target="__black" href="http://fe.ssr-fc.com/">
-        前端开发手册
+      <a target="__black" href="http://doc.ssr-fc.com/docs/features$sponsor">
+        项目捐赠
       </a>
-      <a v-if="!isMobile" href="https://github.com/zhangyuang/ssr" target="_blank"><img src="https://img.shields.io/github/stars/zhangyuang/ssr.svg?color=000" alt="Node" style="width:90px"></a>
+      <a v-if="!isMobile" href="https://github.com/zhangyuang/ssr" target="_blank"><img
+          src="https://img.shields.io/github/stars/zhangyuang/ssr.svg?color=000" alt="Node" style="width:80px"></a>
+
     </div>
   </div>
 </template>
@@ -32,18 +34,16 @@ export default defineComponent({
     searchBox
   },
   inject: ['asyncData'],
-  data () {
+  data() {
     return {
       headerItems: webSiteConfig.header.items,
       isMobile: true
     }
   },
-  created () {
-    const { ua } = this.asyncData.value
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua)
+  created() {
+    const { isMobile } = this.asyncData.value
     this.isMobile = isMobile
   }
-
 })
 </script>
 

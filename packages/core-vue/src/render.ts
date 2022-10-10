@@ -1,38 +1,40 @@
 import { resolve } from 'path'
-import { loadConfig, getCwd, StringToStream, mergeStream2 } from 'ssr-server-utils'
-import { createRenderer } from 'vue-server-renderer'
-import { ISSRContext, UserConfig, ExpressContext, IConfig } from 'ssr-types'
+import { Readable } from 'stream'
+import { loadConfig, getCwd, StringToStream, mergeStream2, judgeServerFramework } from 'ssr-common-utils'
+import { ISSRContext, UserConfig, ISSRNestContext, IConfig } from 'ssr-types'
 
 const cwd = getCwd()
 const defaultConfig = loadConfig()
-const { renderToStream, renderToString } = createRenderer()
+const serverFrameWork = judgeServerFramework()
 
+function render (ctx: ISSRContext, options?: UserConfig & {stream: true}): Promise<Readable>
+function render (ctx: ISSRContext, options?: UserConfig & {stream: false}): Promise<string>
 function render (ctx: ISSRContext, options?: UserConfig): Promise<string>
 function render<T> (ctx: ISSRContext, options?: UserConfig): Promise<T>
 
 async function render (ctx: ISSRContext, options?: UserConfig) {
   const config = Object.assign({}, defaultConfig, options ?? {})
-  const { stream, isVite } = config
+  const { isVite } = config
 
-  if (!ctx.response.type && typeof ctx.response.type !== 'function') {
+  if (serverFrameWork === 'ssr-plugin-midway') {
     ctx.response.type = 'text/html;charset=utf-8'
-  } else if (!(ctx as ExpressContext).response.hasHeader?.('content-type')) {
-    (ctx as ExpressContext).response.setHeader?.('Content-type', 'text/html;charset=utf-8')
+  } else if (serverFrameWork === 'ssr-plugin-nestjs') {
+    (ctx as ISSRNestContext).response.setHeader('Content-type', 'text/html;charset=utf-8')
   }
 
   const serverRes = isVite ? await viteRender(ctx, config) : await commonRender(ctx, config)
-  if (stream) {
-    const stream = mergeStream2(new StringToStream('<!DOCTYPE html>'), renderToStream(serverRes))
+  if (serverRes instanceof Readable) {
+    const stream = mergeStream2(new StringToStream('<!DOCTYPE html>'), serverRes)
     stream.on('error', (e: any) => {
       console.log(e)
     })
     return stream
   } else {
-    return `<!DOCTYPE html>${await renderToString(serverRes)}`
+    return `<!DOCTYPE html>${serverRes}`
   }
 }
 
-async function viteRender (ctx: ISSRContext, config: IConfig) {
+async function viteRender (ctx: ISSRContext, config: IConfig): Promise<string|Readable> {
   const { isDev, chunkName, vueServerEntry } = config
   let serverRes
   if (isDev) {
@@ -50,7 +52,7 @@ async function viteRender (ctx: ISSRContext, config: IConfig) {
   return serverRes
 }
 
-async function commonRender (ctx: ISSRContext, config: IConfig) {
+async function commonRender (ctx: ISSRContext, config: IConfig): Promise<string|Readable> {
   const { isDev, chunkName } = config
   const serverFile = resolve(cwd, `./build/server/${chunkName}.server.js`)
 

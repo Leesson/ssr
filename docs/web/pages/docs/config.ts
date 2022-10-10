@@ -20,9 +20,11 @@ const config = [
       { title: '构建产物', path: 'features$build' },
       { title: '应用部署', path: 'features$deploy' },
       { title: '渲染降级', path: 'features$csr' },
+      { title: '预渲染', path: 'features$ssg' },
       { title: 'FAQ', path: 'features$faq' },
       { title: '开发交流', path: 'features$issue' },
-      { title: '设计思路', path: 'features$thinking' }
+      { title: '设计思路', path: 'features$thinking' },
+      { title: '项目捐赠', path: 'features$sponsor' }
     ]
   },
   {

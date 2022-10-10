@@ -1,15 +1,14 @@
 {
   "name": "ssr-plugin-nestjs",
-  "version": "6.2.10",
+  "version": "6.2.20",
   "description": "plugin-nestjs for ssr",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "sideEffects": false,
   "scripts": {
-    "build": "concurrently \"tsc -p ./tsconfig.cjs.json --inlineSourceMap false\" \" tsc -p ./tsconfig.esm.json --inlineSourceMap false\"",
-    "build:only": "concurrently \"tsc-transpile-only -p ./tsconfig.cjs.json --inlineSourceMap false\" \" tsc-transpile-only -p ./tsconfig.esm.json --inlineSourceMap false\"",
-    "watch": "concurrently \"tsc -w -p ./tsconfig.cjs.json \" \"tsc -w -p ./tsconfig.esm.json \"",
-    "watch:cjs": "tsc -w -p ./tsconfig.cjs.json"
+    "build": "concurrently \"tsc -p ./tsconfig.cjs.json \" \" tsc -p ./tsconfig.esm.json\"",
+    "build:publish": "concurrently \"tsc -p ./tsconfig.cjs.json --sourcemap false\" \" tsc -p ./tsconfig.esm.json --sourcemap false\"",
+    "watch": "concurrently \"tsc -w -p ./tsconfig.cjs.json \" \"tsc -w -p ./tsconfig.esm.json \""
   },
   "repository": {
     "type": "git",
@@ -28,11 +27,14 @@
   },
   "homepage": "https://github.com/zhangyuang/ssr#readme",
   "dependencies": {
+    "@types/express": "^4.17.11",
     "ora": "^4.0.4",
     "rimraf": "^3.0.2",
-    "ssr-server-utils": "^6.2.10"
+    "ssr-common-utils": "^6.2.10",
+    "shelljs": "^0.8.5"
   },
   "peerDependencies": {
+    "@types/shelljs": "^0.8.11",
     "@nestjs/common": ">=7.5.1",
     "@nestjs/core": ">=7.5.1",
     "reflect-metadata": ">=0.1.13",
