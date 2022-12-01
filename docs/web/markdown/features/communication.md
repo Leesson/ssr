@@ -92,12 +92,12 @@ export default {
 
 此方案兼容 `Vue2/Vue3`。同样支持在 `layout/index.vue`, `layout/App.vue` 中获取 `fetchData`
 
-`注: 不再建议使用 props.fetchData, 在 csr 场景下会有问题，建议统一替换为 reactiveFetchData, 通过 reactiveFetchData.value 获取数据`
+`注: 不再建议使用 props.fetchData, 建议统一替换为 props.asyncData`
 
 ```html
 // layout/App.vue
 <template>
-  <router-view :reactiveFetchData="reactiveFetchData" />
+  <router-view :asyncData="asyncData"  />
 </template>
 
 <script lang="ts" setup>
@@ -105,14 +105,11 @@ import { defineProps, App } from 'vue'
 
 const props = defineProps<{
   ssrApp: App,
-  reactiveFetchData: any,
-  asyncData: any
+  asyncData: { value: any }
 }>()
 </script>
 
 ```
-
-具体组件中接收数据, 通过 `props.reactiveFetchData` 在具体组件中接收对应的 `fetch` 返回的数据。同样在前端路由切换时我们也会自动将将要跳转到的路由页面对应的 `fetch` 数据注入到对应的组件 `props` 中。
 
 ```html
 <template>
@@ -136,7 +133,7 @@ import Rectangle from '@/components/rectangle/index.vue'
 import Search from '@/components/search/index.vue'
 
 export default defineComponent({
-  props: ['reactiveFetchData'] // key 名固定为 reactiveFetchData 不可修改，前端路由跳转时将自动注入，服务端渲染时通过 App.vue 注入
+  props: ['asyncData'] // key 名固定为 asyncData 不可修改，前端路由跳转时将自动注入，服务端渲染时通过 App.vue 注入
   components: {
     Slider,
     Rectangle,
@@ -155,9 +152,6 @@ export default defineComponent({
 
 ```
 
-### Vue 场景总结
-
-在 `fetch.ts` 中 `return value` 后，通过 `props.asyncData` 拿到 `layout fetch` 与 `page fetch` 合并后的结果。通过 `props.reactiveFetchData` 拿到当前页面对应的 `fetch` 的结果。也就是在 `layout/index.vue` 拿到的是 `layout fetch`，在页面组件拿到的是 `page fetch`。
 
 ## React 场景
 

@@ -166,6 +166,59 @@ module.exports = {
 }
 ```
 
+## jsOrderPriority🤔
+
+高级用法，用来控制生成的所有 `js chunk` 在页面中的加载优先级顺序处理参数来源是 `JsOrder` 与 `extraJsOrder` 合并后的完整结果。无特殊情况不需要进行改设置。
+
+- 类型: `Record<string, number> | ((params: {webpackChunkName: string}) => Record<string, number>) `
+
+- 默认: `undefined`
+
+- version: `latest`
+
+- 生效场景: `Webpack/Vite` 
+
+默认加载顺序如下，`chunkName` 代表当前请求的路由对应的前端页面级组件被构建出来的 `chunkName.chunk.js` 文件 
+
+```js
+const jsOrder = isVite ? [`${chunkName}.js`] : [`runtime~${chunkName}.js`, 'vendor.js', 'common-vendor.js', `${chunkName}.js`, 'layout-app.js']
+```
+
+
+```js
+module.exports = {
+  // 没有设置的统一优先级为0， 优先级越高的越先加载
+  jsOrderPriority: {
+      'vendor.js': 1,
+      'common-vendor.js': 2 // 优先级更高
+  },
+  jsOrderPriority: ({ chunkName }) => ({
+      // 支持传入函数，入参为当前请求的页面 ChunkName 名称，可直接使用
+      `runtime~${chunkName}.js`: 1,
+      'common-vendor.js': 2 // 优先级更高
+  })
+}
+```
+## cssOrderPriority🤔
+
+高级用法，用来控制生成的所有 `css chunk` 在页面中的加载优先级顺序处理参数来源是 `cssOrder` 与 `extraCssOrder` 合并后的完整结果。无特殊情况不需要进行改设置。
+
+- 类型: `Record<string, number> | ((params: {webpackChunkName: string}) => Record<string, number>) `
+
+- 默认: `undefined`
+
+- version: `latest`
+
+- 生效场景: `Webpack/Vite` 
+
+默认加载顺序如下，`chunkName` 代表当前请求的路由对应的前端页面级组件被构建出来的 `chunkName.chunk.css` 文件 
+
+```js
+const cssOrder = ['vendor.css', 'common-vendor.css', `${chunkName}.css`, 'layout-app.css']
+```
+
+具体用法如上参考 `jsOrderPriority`
+
 ## babelOptions🤔
 
 - 类型: `babelCore.transformOptions`
@@ -178,6 +231,8 @@ module.exports = {
 
 export {
   babelOptions: {
+    include: [], // 需要额外处理的第三方模块
+    exclude: [], // 业务代码不需要处理的文件，通常用于指定纯 js 已经构建过一次的文件二次使用
     presets: [] // 比较少用
     plugins: [] // 通常使用该配置新增 plugin
   }
@@ -313,13 +368,15 @@ const app = await NestFactory.create<NestExpressApplication>(AppModule, isProd ?
 
 ## customeHeadScript🤔
 
-- 类型: `Array<{describe: object, content: string }>|(ctx: ISSRContext) => Array<{describe: object, content: string }>`
+- 类型: `Array<{tagName?: string, describe: object, content: string }>|(ctx: ISSRContext) => Array<{tagName?: string, describe: object, content: string }>`
 - 默认: `[]`
 - 生效场景: `Webpack/Vite` 
 
 仅在 `Vue` 场景下使用, 这里最新版本支持两种类型，可根据当前请求上下文输出不同的脚本内容，常用于动态 [prefix](./features$faq#动态路由前缀) 场景
 
 用于通过配置在页面头部插入自定义的 `script` 为了避免影响期望功能这块内容不做 `escape`，为了避免 `xss` 需要保证插入脚本代码的安全性
+
+`tagName` 自定义需要创建的标签名称，默认为 `script` 标签
 
 `describe` 字段参考 `Vue` [createElement](https://cn.vuejs.org/v2/guide/render-function.html#createElement-%E5%8F%82%E6%95%B0) 用于设置 `script` 标签的 `attribute`
 
@@ -331,6 +388,7 @@ module.exports = {
   customeHeadScript: [
     // Vue3 直接写 attr 属性即可
     {
+      tagName: 'xxx', // 默认值为 script
       describe: {
         type: 'text/javascript',
         src: 'https://res.wx.qq.com/open/js/jweixin-1.2.0.js'
@@ -503,7 +561,7 @@ const corejsOptions = userConfig.corejs ? {
 
 该配置用于覆盖默认的 `corejsOptions` 配置
 
-## babelExtraModule🤔
+## babelExtraModule🤔 (建议使用 babelOptions.include 代替)
 
 - 类型: `webpack.RuleSetCondition`
 

@@ -1,3 +1,134 @@
+## [6.2.59](https://github.com/zhangyuang/ssr/compare/utils@6.2.58...utils@6.2.59) (2022-12-01)
+
+
+### Bug Fixes
+
+* types ([7015666](https://github.com/zhangyuang/ssr/commit/70156663c28c87628596a4466cf8c647d18335dd))
+
+
+### Features
+
+* build spa support priority ([d456969](https://github.com/zhangyuang/ssr/commit/d4569697d00a720c2e820206ebb5df1002c4af8d))
+
+
+
+## [6.2.58](https://github.com/zhangyuang/ssr/compare/utils@6.2.57...utils@6.2.58) (2022-12-01)
+
+
+### Features
+
+* spa support extrajsorder cssorder ([ebc82c5](https://github.com/zhangyuang/ssr/commit/ebc82c52d35502533130fc4d6e551aed0f9d1137))
+* spa with customeFooterScript is array ([b9508ae](https://github.com/zhangyuang/ssr/commit/b9508aea7e98bbbdaecaa318667d10d04c10aa82))
+* support jsOrderPriority🤔 cssOrderPriority🤔 ([9db9a7d](https://github.com/zhangyuang/ssr/commit/9db9a7d03e8c47a93ca459b8b8b3fad571f73960))
+
+
+
+## [6.2.57](https://github.com/zhangyuang/ssr/compare/utils@6.2.56...utils@6.2.57) (2022-12-01)
+
+
+### Bug Fixes
+
+* defaultExternals add react-dom close [#253](https://github.com/zhangyuang/ssr/issues/253) ([f748cee](https://github.com/zhangyuang/ssr/commit/f748ceeac2cf3205549b2a818e9cc4e386a5c250))
+
+
+
+## [6.2.56](https://github.com/zhangyuang/ssr/compare/utils@6.2.55...utils@6.2.56) (2022-11-22)
+
+
+### Features
+
+* support antd5 close [#250](https://github.com/zhangyuang/ssr/issues/250) ([c999536](https://github.com/zhangyuang/ssr/commit/c9995365fbd82faa30a006b51e5cd76ab307bab5))
+
+
+
+## [6.2.55](https://github.com/zhangyuang/ssr/compare/utils@6.2.53...utils@6.2.55) (2022-11-05)
+
+
+### Bug Fixes
+
+* call judgeServerFramework in node environment prevent utils be ([47cd81a](https://github.com/zhangyuang/ssr/commit/47cd81a18a85be507c7d43c323c294f2d5b8775d))
+* pinia alias ([2256194](https://github.com/zhangyuang/ssr/commit/22561948b9d27ea6296b5f60cefb3f42d6c1d4c1))
+
+
+
+## [6.2.54](https://github.com/zhangyuang/ssr/compare/utils@6.2.53...utils@6.2.54) (2022-11-05)
+
+
+### Bug Fixes
+
+* pinia alias ([2256194](https://github.com/zhangyuang/ssr/commit/22561948b9d27ea6296b5f60cefb3f42d6c1d4c1))
+* runtime setheader ([1e452de](https://github.com/zhangyuang/ssr/commit/1e452debb491d01002cfc2109b37e046f23fe334))
+
+
+
+## [6.2.53](https://github.com/zhangyuang/ssr/compare/utils@6.2.51...utils@6.2.53) (2022-11-04)
+
+
+### Bug Fixes
+
+* gernerate html ([08e5678](https://github.com/zhangyuang/ssr/commit/08e567877e7b6d0b4b3a6fab6ad4ea2546b0c041))
+
+
+### Features
+
+* support fastify close [#245](https://github.com/zhangyuang/ssr/issues/245) ([#246](https://github.com/zhangyuang/ssr/issues/246)) ([d9c24c5](https://github.com/zhangyuang/ssr/commit/d9c24c595941447c5e8072c63c1a80cba06689c3))
+* update vue alias ([36e15ac](https://github.com/zhangyuang/ssr/commit/36e15ac5d2d1398ced6abef2727970947177e6bc))
+
+
+
+## [6.2.52](https://github.com/zhangyuang/ssr/compare/utils@6.2.51...utils@6.2.52) (2022-11-01)
+
+
+
+## [6.2.51](https://github.com/zhangyuang/ssr/compare/utils@6.2.50...utils@6.2.51) (2022-10-26)
+
+
+### Features
+
+* update vite build logic ([0bf7a28](https://github.com/zhangyuang/ssr/commit/0bf7a28ca38f2cde8501dfb53546f4d3b0c6f51f))
+
+
+
+## [6.2.50](https://github.com/zhangyuang/ssr/compare/utils@6.2.49...utils@6.2.50) (2022-10-25)
+
+
+### Features
+
+* update react alias ([160b991](https://github.com/zhangyuang/ssr/commit/160b9911166172f36db9690be87f35fcbfc747aa))
+
+
+
+## [6.2.49](https://github.com/zhangyuang/ssr/compare/utils@6.2.48...utils@6.2.49) (2022-10-25)
+
+
+### Bug Fixes
+
+* onlyCsr types core-vue3 render logic ([f75929e](https://github.com/zhangyuang/ssr/commit/f75929ef84e564fe7e3d9c5c6d1e56fe70f5629b))
+* types ([2ad371f](https://github.com/zhangyuang/ssr/commit/2ad371fc6c0b27e6e52801048a28a3d8fdcfccf7))
+
+
+### Features
+
+* update sprops types ([9383235](https://github.com/zhangyuang/ssr/commit/9383235321f171b4d5c877d08025e9b9936175d3))
+* use jsx-runtime in react ([ffdd346](https://github.com/zhangyuang/ssr/commit/ffdd34674ff0753e130b6570ab9eef3b1aec5217))
+
+
+
+## [6.2.48](https://github.com/zhangyuang/ssr/compare/utils@6.2.47...utils@6.2.48) (2022-10-18)
+
+
+### Bug Fixes
+
+* react hmr ([2c57a6e](https://github.com/zhangyuang/ssr/commit/2c57a6e14d485500a2e8868035d9cb6e1fa883b0))
+
+
+### Features
+
+* customScript support tagName ([91a836f](https://github.com/zhangyuang/ssr/commit/91a836f0b423b46f730a2c893b56f89bddd470c5))
+* support more babelOptions like include exclude ([4a2b254](https://github.com/zhangyuang/ssr/commit/4a2b254f4f6a9996bf3c3f9fea561636d61b85ac))
+
+
+
 ## [6.2.47](https://github.com/zhangyuang/ssr/compare/utils@6.2.46...utils@6.2.47) (2022-09-27)
 
 

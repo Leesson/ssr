@@ -229,6 +229,7 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 - http://vue.ssr-fc.com?csr=true 部署到阿里云的 Vue SSR 应用, 以 CSR 模式访问
 - http://vue3.ssr-fc.com?csr=true 部署到阿里云的 Vue3 SSR 应用, 以 CSR 模式访问
 
+
 ## 生态系统
 
 | Project             | Status                                           | Description                                                             |
@@ -260,6 +261,8 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 [ssr-plugin-vue-status]: https://img.shields.io/npm/v/ssr-plugin-vue.svg
 [ssr-plugin-vue3-status]: https://img.shields.io/npm/v/ssr-plugin-vue3.svg
 [ssr-webpack-status]: https://img.shields.io/npm/v/ssr-webpack.svg
+[ssr-types-status]: https://img.shields.io/npm/v/ssr-types.svg
+
 
 [ssr]: https://github.com/zhangyuang/ssr/tree/dev/packages/cli
 [ssr-core-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/core-react

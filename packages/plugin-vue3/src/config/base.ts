@@ -65,7 +65,7 @@ const addBabelLoader = (chain: WebpackChain.Rule<WebpackChain.Module>, envOption
 
 const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
   const config = loadConfig()
-  const { moduleFileExtensions, useHash, chainBaseConfig, locale, corejsOptions, ssrVueLoaderOptions, csrVueLoaderOptions, babelExtraModule, alias, define } = config
+  const { moduleFileExtensions, useHash, chainBaseConfig, locale, corejsOptions, ssrVueLoaderOptions, csrVueLoaderOptions, babelExtraModule, alias, define, babelOptions } = config
 
   let vueLoaderOptions = {
     babelParserPlugins: ['jsx', 'classProperties', 'decorators-legacy'],
@@ -117,6 +117,8 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     chain.resolve.alias
       .set(item, alias[item])
   })
+  chain.resolve.alias
+    .set('pinia', loadModuleFromFramework('pinia'))
 
   addImageChain(chain, isServer)
 
@@ -160,6 +162,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .test(/\.(js|mjs|ts|tsx)$/)
     .exclude
     .add(/node_modules|core-js/)
+    .add(babelOptions?.exclude as Array<string|RegExp> ?? [])
     .end()
 
   const module = chain.module
@@ -168,12 +171,7 @@ const getBaseConfig = (chain: WebpackChain, isServer: boolean) => {
     .include
     .add([/ssr-plugin-vue3/, /ssr-client-utils/, /ssr-hoc-vue/, /vue/, /ssr-common-utils/])
 
-  let babelForExtraModule
-  if (babelExtraModule) {
-    babelForExtraModule = module.add(babelExtraModule).end().exclude.add(/core-js/).end()
-  } else {
-    babelForExtraModule = module.end().exclude.add(/core-js/).end()
-  }
+  const babelForExtraModule = module.add(babelExtraModule ?? []).add(babelOptions?.include as Array<string|RegExp> ?? []).end().exclude.add(/core-js/).end()
 
   addBabelLoader(babelModule, envOptions)
   addBabelLoader(babelForExtraModule, envOptions)

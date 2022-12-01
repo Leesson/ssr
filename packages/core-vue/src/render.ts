@@ -1,11 +1,10 @@
 import { resolve } from 'path'
 import { Readable } from 'stream'
-import { loadConfig, getCwd, StringToStream, mergeStream2, judgeServerFramework } from 'ssr-common-utils'
-import { ISSRContext, UserConfig, ISSRNestContext, IConfig } from 'ssr-types'
+import { loadConfig, getCwd, StringToStream, mergeStream2, setHeader, judgeServerFramework } from 'ssr-common-utils'
+import type { ISSRContext, UserConfig, IConfig } from 'ssr-types'
 
 const cwd = getCwd()
 const defaultConfig = loadConfig()
-const serverFrameWork = judgeServerFramework()
 
 function render (ctx: ISSRContext, options?: UserConfig & {stream: true}): Promise<Readable>
 function render (ctx: ISSRContext, options?: UserConfig & {stream: false}): Promise<string>
@@ -15,12 +14,7 @@ function render<T> (ctx: ISSRContext, options?: UserConfig): Promise<T>
 async function render (ctx: ISSRContext, options?: UserConfig) {
   const config = Object.assign({}, defaultConfig, options ?? {})
   const { isVite } = config
-
-  if (serverFrameWork === 'ssr-plugin-midway') {
-    ctx.response.type = 'text/html;charset=utf-8'
-  } else if (serverFrameWork === 'ssr-plugin-nestjs') {
-    (ctx as ISSRNestContext).response.setHeader('Content-type', 'text/html;charset=utf-8')
-  }
+  setHeader(ctx, judgeServerFramework())
 
   const serverRes = isVite ? await viteRender(ctx, config) : await commonRender(ctx, config)
   if (serverRes instanceof Readable) {

@@ -29,14 +29,16 @@ const loadConfig = (): IConfig => {
     '~/src': join(cwd, './src'),
     _build: join(cwd, './build')
   }, framework === 'ssr-plugin-react' ? {
-    react: loadModuleFromFramework('react'),
+    // react: loadModuleFromFramework('react'),
+    'react-dom': loadModuleFromFramework('react-dom'),
     'react-router': loadModuleFromFramework('react-router'),
-    'react-router-dom': loadModuleFromFramework('react-router-dom')
+    'react-router-dom': loadModuleFromFramework('react-router-dom'),
+    'react/jsx-runtime': loadModuleFromFramework('react/jsx-runtime'),
+    'react/jsx-dev-runtime': loadModuleFromFramework('react/jsx-dev-runtime')
   } : {
     vue$: framework === 'ssr-plugin-vue' ? 'vue/dist/vue.runtime.esm.js' : 'vue/dist/vue.runtime.esm-bundler.js',
     '@vue/server-renderer': loadModuleFromFramework('@vue/server-renderer/index.js') // use commonjs file
   }, userConfig.alias)
-
   type ClientLogLevel = 'error'
   const publicPath = userConfig.publicPath?.startsWith('http') ? userConfig.publicPath : normalizeStartPath(userConfig.publicPath ?? '/')
 

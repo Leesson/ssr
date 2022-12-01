@@ -1,6 +1,7 @@
 import type { Options, RuleSetCondition, compilation } from 'webpack'
 import type WebpackChainConfig from 'webpack-chain'
-import type { PluginOption, ServerOptions, UserConfig as ViteConfig } from 'vite'
+import type { PluginOption, ServerOptions, UserConfig as ViteConfig, CSSOptions } from 'vite'
+import type { Plugin as PostCssPlugin } from 'postcss'
 import type { RollupBabelInputPluginOptions } from '@rollup/plugin-babel'
 import { Argv } from './yargs'
 import { ISSRContext } from './ctx'
@@ -11,14 +12,23 @@ export interface SSRModule extends compilation.Module {
   nameForCondition?: () => string
 }
 
+export interface PkgJson {
+  name: string
+  version: string
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
+
 export type Chain = WebpackChainConfig
 
 export type Script = Array<{
+  tagName?: string
   describe?: object | {
     attrs: object
   }
   content?: string
 }>
+
 export type Json = string | number | boolean | { [key: string]: Json }
 
 export interface IConfig {
@@ -41,15 +51,17 @@ export interface IConfig {
   jsOrder: string[]
   extraJsOrder?: ((ctx: ISSRContext) => string[]) | string[] | undefined
   extraCssOrder?: ((ctx: ISSRContext) => string[]) | string[] | undefined
+  jsOrderPriority?: Record<string, number> | ((params: {chunkName: string}) => Record<string, number>)
+  cssOrderPriority?: Record<string, number> | ((params: {chunkName: string}) => Record<string, number>)
   css?: () => {
     loaderOptions?: {
       cssOptions?: any
       less?: any // both vite and webpack
       sass?: any // only webpack
       scss?: any // only vite
-      postcss?: { // both vite and webpack
-        options: any
-        plugins: any[]
+      postcss?: {
+        options?: Exclude<CSSOptions['postcss'], string>
+        plugins?: PostCssPlugin[]
       }
     }
   }
